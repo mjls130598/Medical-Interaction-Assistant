@@ -1,2 +1,6 @@
+.vscode
+.pytest_cache
+__pycache__
 .env
 data/inputs_pdfs
+Pipfile.lock

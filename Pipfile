@@ -7,9 +7,11 @@ name = "pypi"
 fastapi = "*"
 langchain = "*"
 langchain-openai = "*"
+langchain_core = "*"
 chromadb = "*"
-pypdf = "*"
+pymupdf = "*"
 
 
 [dev-packages]
 pytest = "*"
+pyfakefs = "*"
