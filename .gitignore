@@ -2,5 +2,5 @@
 .pytest_cache
 __pycache__
 .env
-data/inputs_pdfs
+data/input_pdfs
 Pipfile.lock
