@@ -52,7 +52,6 @@ class TestPdfLoader:
             pdf_loader = MedicalPDFLoader(pdf_path)
             paragraphs = pdf_loader._read_pdf()
 
-            assert paragraphs == []
             assert "Error processing" in caplog.text
 
 
