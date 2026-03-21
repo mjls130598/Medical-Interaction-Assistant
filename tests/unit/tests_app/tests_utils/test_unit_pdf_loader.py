@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest.mock import patch
 
 import fitz
 import pytest
@@ -86,3 +87,144 @@ class TestPdfLoader:
             assert len(paragraphs) == 1
             assert "This is a PDF example" in paragraphs          
             
+    class TestCleanBlock:
+
+        @pytest.fixture
+        def loader(self):
+            return MedicalPDFLoader.__new__(MedicalPDFLoader)
+
+        def test_remove_space_between_sentence(self, loader):
+
+            paragraph = (
+                "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene \n"
+                "información importante para usted."
+            )
+
+            read_paragraph = loader._clean_block(paragraph)
+            real_paragraph = "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted."
+            
+
+            assert read_paragraph == real_paragraph
+
+        def test_new_lines_between_capital_letters(self, loader):
+
+            paragraph = (
+                "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene \n"
+                "información importante para usted.\n"
+                "Conserve este prospecto, ya que puede tener que volver a leerlo.")
+
+            read_paragraph = loader._clean_block(paragraph)
+            real_paragraph = (
+                "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted.\n"
+                "Conserve este prospecto, ya que puede tener que volver a leerlo."
+            )
+
+            assert read_paragraph == real_paragraph
+
+        def test_new_lines_between_guion(self, loader):
+
+            paragraph = (
+                "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene \n"
+                "información importante para usted.\n"
+                "- Conserve este prospecto, ya que puede tener que volver a leerlo.\n"
+                "- Si tiene alguna duda, consulte a su médico o farmacéutico.\n"
+                "- Este medicamento se le ha recetado solamente a usted, y no debe dárselo a otras personas aunque tengan \n"
+                "los mismos síntomas que usted, ya que puede perjudicarles.\n"
+                "- Si experimenta efectos adversos, consulte a su médico o farmacéutico, incluso si se trata de efectos \n"
+                "adversos que no aparecen en este prospecto. Ver sección 4.")
+
+            read_paragraph = loader._clean_block(paragraph)
+            real_paragraph = (
+                "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted.\n"
+                "- Conserve este prospecto, ya que puede tener que volver a leerlo.\n"
+                "- Si tiene alguna duda, consulte a su médico o farmacéutico.\n"
+                "- Este medicamento se le ha recetado solamente a usted, y no debe dárselo a otras personas aunque tengan los mismos síntomas que usted, ya que puede perjudicarles.\n"
+                "- Si experimenta efectos adversos, consulte a su médico o farmacéutico, incluso si se trata de efectos adversos que no aparecen en este prospecto. Ver sección 4."
+            )
+
+            assert read_paragraph == real_paragraph
+
+        def test_new_lines_between_number_sections(self, loader):
+
+            paragraph = (
+                "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene \n"
+                "información importante para usted.\n"
+                "1. Conserve este prospecto, ya que puede tener que volver a leerlo.\n"
+                "2. Si tiene alguna duda, consulte a su médico o farmacéutico.\n"
+                "3. Este medicamento se le ha recetado solamente a usted, y no debe dárselo a otras personas aunque tengan \n"
+                "los mismos síntomas que usted, ya que puede perjudicarles.\n"
+                "4. Si experimenta efectos adversos, consulte a su médico o farmacéutico, incluso si se trata de efectos \n"
+                "adversos que no aparecen en este prospecto. Ver sección 4.")
+
+            read_paragraph = loader._clean_block(paragraph)
+            real_paragraph = (
+                "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted.\n"
+                "1. Conserve este prospecto, ya que puede tener que volver a leerlo.\n"
+                "2. Si tiene alguna duda, consulte a su médico o farmacéutico.\n"
+                "3. Este medicamento se le ha recetado solamente a usted, y no debe dárselo a otras personas aunque tengan los mismos síntomas que usted, ya que puede perjudicarles.\n"
+                "4. Si experimenta efectos adversos, consulte a su médico o farmacéutico, incluso si se trata de efectos adversos que no aparecen en este prospecto. Ver sección 4."
+            )
+
+            assert read_paragraph == real_paragraph
+
+        def test_complete_word(self, loader):
+            paragraph = "Lea todo el prospecto deteni-\ndamente"
+
+            read_paragraph = loader._clean_block(paragraph)
+            real_paragraph = "Lea todo el prospecto detenidamente"
+
+            assert read_paragraph == real_paragraph
+
+    class TestCreateParagraphs:
+
+        @pytest.fixture
+        def loader(self):
+            return MedicalPDFLoader.__new__(MedicalPDFLoader)
+        
+        def test_remove_page_number(self, loader):
+
+            blocks = [
+                (0, 0, 0, 0, "1 de 5", 0, 0)
+            ]
+            cleaned_paragraph = loader._create_paragraphs(blocks)
+
+            assert cleaned_paragraph == []
+
+        def test_remove_no_text_block(self, loader):
+
+            blocks = [
+                (0, 0, 0, 0, "no text", 0, 1)
+            ]
+            cleaned_paragraph = loader._create_paragraphs(blocks)
+
+            assert cleaned_paragraph == []
+
+        def test_remove_empty_block(self, loader):
+
+            blocks = [
+                (0, 0, 0, 0, "", 0, 0)
+            ]
+            cleaned_paragraph = loader._create_paragraphs(blocks)
+
+            assert cleaned_paragraph == []
+
+        def test_concatenate_incomplete_paragraphs(self, loader):
+            blocks = [
+                [0, 0, 0, 0, "Párrafo incompleto", 0, 0],
+                [0, 0, 0, 0, "continuación del texto.", 1, 0],
+                [0, 0, 0, 0, "Nuevo párrafo independiente.", 2, 0]
+            ]
+
+            def side_effect_clean(text):
+                return text
+            
+            patch.object(MedicalPDFLoader, '_clean_block', side_effect=side_effect_clean)
+
+            cleaned_paragraphs = loader._create_paragraphs(blocks)
+            real_paragraphs = [
+                "Párrafo incompleto continuación del texto.",
+                "Nuevo párrafo independiente."
+            ]
+
+            assert cleaned_paragraphs == real_paragraphs
+
