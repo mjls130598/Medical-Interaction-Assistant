@@ -1,7 +1,5 @@
-from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-import fitz
 import pytest
 
 from app.utils.pdf_loader import MedicalPDFLoader
@@ -51,41 +49,41 @@ class TestPdfLoader:
 
     class TestReadPdf:
 
-        def _create_fake_pdf(self, pdf_path, fs):  
-            # Creation of PDF file
-            doc_temp = fitz.open()
-            page = doc_temp.new_page()
-            page.insert_text((50, 50), "This is a PDF example")
-            pdf_bytes = doc_temp.tobytes()
-            doc_temp.save(pdf_path)
-            doc_temp.close()
+        @patch("app.utils.pdf_loader.Path.is_file")
+        @patch("app.utils.pdf_loader.fitz.open")
+        def test_no_read_pdf(self, mock_fitz_open, mock_path_file, caplog):
 
-            # Creation of PDF path
-            fs.create_file(pdf_path, contents=pdf_bytes)
+            mock_path_file.return_value = True
+            mock_fitz_open.side_effect = Exception("RuntimeError: bad PDF")
 
-        def _create_corrupt_pdf(self, pdf_path, fs):
-            fs.create_file(pdf_path, contents="Corrupt PDF!")
-
-        def test_no_read_pdf(self, fs, caplog):
             pdf_path = "data/input_pdfs/corrupt.pdf"
-            self._create_corrupt_pdf(pdf_path, fs)
 
             pdf_loader = MedicalPDFLoader(pdf_path)
-            paragraphs = pdf_loader._read_pdf()
+            pdf_loader._read_pdf()
 
             assert "Error processing" in caplog.text
 
-
-        def test_read_pdf(self, fs):
+        @patch("app.utils.pdf_loader.Path.is_file")
+        @patch("app.utils.pdf_loader.fitz.open")
+        def test_read_pdf(self, mock_fitz_open, mock_path_file):
             pdf_path = "data/input_pdfs/example.pdf"
 
-            self._create_fake_pdf(pdf_path, fs)
+            mock_path_file.return_value = True
+
+            mock_doc = MagicMock()
+            mock_page = MagicMock()
+
+            mock_page.get_text.return_value = [(0, 0, 0, 0, "This is a PDF example", 0, 0)]
+            mock_doc.__iter__.return_value = [mock_page]
+            mock_fitz_open.return_value.__enter__.return_value = mock_doc
 
             pdf_loader = MedicalPDFLoader(pdf_path)
+
             paragraphs = pdf_loader._read_pdf()
 
             assert len(paragraphs) == 1
-            assert "This is a PDF example" in paragraphs          
+            assert "This is a PDF example" in paragraphs 
+            mock_page.get_text.assert_called_once_with("blocks")         
             
     class TestCleanBlock:
 
@@ -102,7 +100,6 @@ class TestPdfLoader:
 
             read_paragraph = loader._clean_block(paragraph)
             real_paragraph = "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted."
-            
 
             assert read_paragraph == real_paragraph
 
