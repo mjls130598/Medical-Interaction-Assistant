@@ -82,7 +82,7 @@ class TestPdfLoader:
             paragraphs = pdf_loader._read_pdf()
 
             assert len(paragraphs) == 1
-            assert "This is a PDF example" in paragraphs 
+            assert (0, "This is a PDF example") in paragraphs 
             mock_page.get_text.assert_called_once_with("blocks")         
             
     class TestCleanBlock:
@@ -181,7 +181,7 @@ class TestPdfLoader:
         def test_remove_page_number(self, loader):
 
             blocks = [
-                (0, 0, 0, 0, "1 de 5", 0, 0)
+                (0, (0, 0, 0, 0, "1 de 5", 0, 0))
             ]
             cleaned_paragraph = loader._create_paragraphs(blocks)
 
@@ -190,7 +190,7 @@ class TestPdfLoader:
         def test_remove_no_text_block(self, loader):
 
             blocks = [
-                (0, 0, 0, 0, "no text", 0, 1)
+                (0,(0, 0, 0, 0, "no text", 0, 1))
             ]
             cleaned_paragraph = loader._create_paragraphs(blocks)
 
@@ -199,7 +199,7 @@ class TestPdfLoader:
         def test_remove_empty_block(self, loader):
 
             blocks = [
-                (0, 0, 0, 0, "", 0, 0)
+                (0, (0, 0, 0, 0, "", 0, 0))
             ]
             cleaned_paragraph = loader._create_paragraphs(blocks)
 
@@ -207,9 +207,9 @@ class TestPdfLoader:
 
         def test_concatenate_incomplete_paragraphs(self, loader):
             blocks = [
-                [0, 0, 0, 0, "Párrafo incompleto", 0, 0],
-                [0, 0, 0, 0, "continuación del texto.", 1, 0],
-                [0, 0, 0, 0, "Nuevo párrafo independiente.", 2, 0]
+                (0, (0, 0, 0, 0, "Párrafo incompleto", 0, 0)),
+                (0, (0, 0, 0, 0, "continuación del texto.", 1, 0)),
+                (0, (0, 0, 0, 0, "Nuevo párrafo independiente.", 2, 0))
             ]
 
             def side_effect_clean(text):
@@ -219,8 +219,8 @@ class TestPdfLoader:
 
             cleaned_paragraphs = loader._create_paragraphs(blocks)
             real_paragraphs = [
-                "Párrafo incompleto continuación del texto.",
-                "Nuevo párrafo independiente."
+                (0, "Párrafo incompleto continuación del texto."),
+                (0, "Nuevo párrafo independiente.")
             ]
 
             assert cleaned_paragraphs == real_paragraphs

@@ -63,7 +63,7 @@ class TestPdfLoader:
             paragraphs = pdf_loader._read_pdf()
 
             assert len(paragraphs) == 1
-            assert "This is a PDF example" in paragraphs
+            assert (0, "This is a PDF example") in paragraphs
 
     class TestCleanBlock:
 
@@ -76,7 +76,7 @@ class TestPdfLoader:
             with patch.object(MedicalPDFLoader, '_clean_block', wraps=pdf_loader._clean_block) as spy_clean:
                 read_paragraph = pdf_loader._read_pdf()[0]
                 real_paragraph = (
-                    "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted."
+                    0, "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted."
                 )
                 
                 assert read_paragraph == real_paragraph
@@ -93,7 +93,7 @@ class TestPdfLoader:
                 read_paragraph = pdf_loader._read_pdf()[0]
             
                 real_paragraph = (
-                    "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted.\n"
+                    0, "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted.\n"
                     "Conserve este prospecto, ya que puede tener que volver a leerlo."
                 )
 
@@ -110,7 +110,7 @@ class TestPdfLoader:
             with patch.object(MedicalPDFLoader, '_clean_block', wraps=pdf_loader._clean_block) as spy_clean:
                 read_paragraph = pdf_loader._read_pdf()[0]
             
-                real_paragraph = (
+                real_paragraph = (0, 
                     "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted.\n"
                     "- Conserve este prospecto, ya que puede tener que volver a leerlo.\n"
                     "- Si tiene alguna duda, consulte a su médico o farmacéutico.\n"
@@ -131,7 +131,7 @@ class TestPdfLoader:
             with patch.object(MedicalPDFLoader, '_clean_block', wraps=pdf_loader._clean_block) as spy_clean:
                 read_paragraph = pdf_loader._read_pdf()[0]
             
-                real_paragraph = (
+                real_paragraph = (0, 
                     "Lea todo el prospecto detenidamente antes de empezar a tomar este medicamento, porque contiene información importante para usted.\n"
                     "1. Conserve este prospecto, ya que puede tener que volver a leerlo.\n"
                     "2. Si tiene alguna duda, consulte a su médico o farmacéutico.\n"
@@ -152,7 +152,7 @@ class TestPdfLoader:
             with patch.object(MedicalPDFLoader, '_clean_block', wraps=pdf_loader._clean_block) as spy_clean:
                 read_paragraph = pdf_loader._read_pdf()[0]
             
-                real_paragraph = "Lea todo el prospecto detenidamente"
+                real_paragraph = (0, "Lea todo el prospecto detenidamente")
 
                 assert read_paragraph == real_paragraph
                 assert spy_clean.called
@@ -208,8 +208,8 @@ class TestPdfLoader:
                 with patch.object(MedicalPDFLoader, '_clean_block', wraps=pdf_loader._clean_block) as spy_clean:
                     read_paragraph = pdf_loader._read_pdf()
                     real_paragraphs = [
-                        "Párrafo incompleto continuación del texto.",
-                        "Nuevo párrafo independiente."
+                        (0, "Párrafo incompleto continuación del texto."),
+                        (0, "Nuevo párrafo independiente.")
                     ]
                 
                     assert read_paragraph == real_paragraphs

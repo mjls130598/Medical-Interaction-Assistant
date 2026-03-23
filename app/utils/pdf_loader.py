@@ -1,6 +1,6 @@
 from pathlib import Path
 import re
-from typing import List
+from typing import List, Tuple
 import fitz
 import logging
 
@@ -32,10 +32,10 @@ class MedicalPDFLoader:
         # 3. Concatenate multiple spaces in only one
         return re.sub(r' +', " ", complete_sentences).strip()
     
-    def _create_paragraphs(self, blocks) -> List[str]:
+    def _create_paragraphs(self, blocks) -> List[Tuple[int, str]]:
         paragraphs = []
 
-        for idx, block in enumerate(blocks):
+        for idx, (num_page, block) in enumerate(blocks):
             
             logging.info(f"Extracting block nº {idx + 1}")
 
@@ -59,22 +59,22 @@ class MedicalPDFLoader:
             
             if paragraphs:
                 logging.info("Checking if the last paragraph is not complete and the current text is from the last paragraph")
-                last_paragraph = paragraphs[-1]
+                last_paragraph = paragraphs[-1][1]
                 is_incomplete = not last_paragraph.endswith(('.', ':', '?', '!'))
                 starts_with_low = text[0].islower()
 
                 if is_incomplete and starts_with_low:
                     logging.info("Concatenate last paragraph with current text")
-                    paragraphs[-1] = f'{last_paragraph} {text}'
+                    paragraphs[-1] = (paragraphs[-1][0], f'{last_paragraph} {text}')
                     continue
 
             logging.info("Creating new paragraph")                        
-            paragraphs.append(text)
+            paragraphs.append((num_page, text))
 
         return paragraphs
 
 
-    def _read_pdf(self) -> List[str]:
+    def _read_pdf(self) -> List[Tuple[int, str]]:
 
         try:
             with fitz.open(self.file_path) as doc:
@@ -83,7 +83,7 @@ class MedicalPDFLoader:
 
                 logging.info("Extracting blocks from document")
                 all_blocks = (
-                    block for page in doc
+                    (num_page, block) for num_page, page in enumerate(doc)
                     for block in page.get_text("blocks") # read paragraphs instead of lines
                 )
                 
