@@ -1,6 +1,6 @@
 from pathlib import Path
 import re
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 import fitz
 from langchain_core.documents import Document
 import logging
@@ -75,7 +75,7 @@ class MedicalPDFLoader:
         return paragraphs
 
 
-    def _read_pdf(self) -> Tuple[Dict[int, str], int]:
+    def _read_pdf(self) -> Tuple[List[Tuple[int, str]], int]:
 
         try:
             with fitz.open(self.file_path) as doc:
@@ -129,7 +129,7 @@ class MedicalPDFLoader:
                     "total_pages": total_pages
                 }
             )
-            for num_page, content in pages.items()
+            for num_page, content in pages
         ]
 
         return documents

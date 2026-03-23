@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+from langchain_core.documents import Document
 
 import pytest
 
@@ -226,4 +227,34 @@ class TestPdfLoader:
             assert (0, "This is a PDF example") in pages 
             assert total_pages == 1
             mock_page.get_text.assert_called_once_with("blocks")     
+
+    class TestReadLoadDocument:
+
+        @patch("app.utils.pdf_loader.Path.is_file")
+        def test_read_load_document_success(self, mock_is_file):
+            mock_is_file.return_value = True
+            loader = MedicalPDFLoader("test.pdf")
+            
+            fake_pages = [(0, "Contenido página 1"), (1, "Contenido página 2")]
+            fake_total_pages = 2
+
+            with patch.object(MedicalPDFLoader, '_read_pdf', return_value=(fake_pages, fake_total_pages)):
+                documents = loader.read_load_document()
+
+                assert len(documents) == 2
+                assert isinstance(documents[0], Document)
+                
+                assert documents[0].page_content == "Contenido página 1"
+                assert documents[0].metadata["page"] == 1
+                assert documents[0].metadata["total_pages"] == 2
+                assert documents[0].metadata["source"] == "test.pdf"
+
+        @patch("app.utils.pdf_loader.Path.is_file")
+        def test_read_load_document_empty_error(self, mock_is_file):
+            mock_is_file.return_value = True
+            loader = MedicalPDFLoader("empty.pdf")
+
+            with patch.object(MedicalPDFLoader, '_read_pdf', return_value=({}, 0)):
+                with pytest.raises(ValueError, match="There isn't information to save"):
+                    loader.read_load_document()
 

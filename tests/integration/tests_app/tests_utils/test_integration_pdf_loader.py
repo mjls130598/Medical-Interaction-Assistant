@@ -1,6 +1,7 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import fitz
 import pytest
 
 from app.utils.pdf_loader import MedicalPDFLoader
@@ -225,3 +226,27 @@ class TestPdfLoader:
                 assert spy_create.call_count == 1
                 assert spy_clean.called
                 assert spy_clean.call_count == 1
+
+    class TestReadLoadDocument:
+
+        def test_pdf_to_document(self):
+            
+            pdf_path = str(self.base_path / "data" / "example.pdf")
+
+            pdf_loader = MedicalPDFLoader(pdf_path)
+
+            with patch.object(MedicalPDFLoader, '_read_pdf', wraps=pdf_loader._read_pdf) as spy_read:
+                with patch.object(MedicalPDFLoader, '_create_paragraphs', wraps=pdf_loader._create_paragraphs) as spy_create:
+                    with patch.object(MedicalPDFLoader, '_clean_block', wraps=pdf_loader._clean_block) as spy_clean:
+                        documents = pdf_loader.read_load_document()
+
+                        assert len(documents) == 1
+                        assert "This is a PDF example" in documents[0].page_content
+                        assert documents[0].metadata["total_pages"] == 1
+                        assert documents[0].metadata["source"] == pdf_path
+                        assert spy_read.called
+                        assert spy_read.call_count == 1
+                        assert spy_create.called
+                        assert spy_create.call_count == 1
+                        assert spy_clean.called
+                        assert spy_clean.call_count == 1
