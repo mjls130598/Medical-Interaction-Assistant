@@ -213,8 +213,15 @@ class TestPdfLoader:
             pdf_path = str(self.base_path / "data" / "example.pdf")
 
             pdf_loader = MedicalPDFLoader(pdf_path)
-            pages, total_pages = pdf_loader._read_pdf()
+            with patch.object(MedicalPDFLoader, '_create_paragraphs', wraps=pdf_loader._create_paragraphs) as spy_create:
+               with patch.object(MedicalPDFLoader, '_clean_block', wraps=pdf_loader._clean_block) as spy_clean:
 
-            assert len(pages) == 1
-            assert total_pages == 1
-            assert (0, "This is a PDF example") in pages
+                pages, total_pages = pdf_loader._read_pdf()
+
+                assert len(pages) == 1
+                assert total_pages == 1
+                assert (0, "This is a PDF example") in pages
+                assert spy_create.called
+                assert spy_create.call_count == 1
+                assert spy_clean.called
+                assert spy_clean.call_count == 1
