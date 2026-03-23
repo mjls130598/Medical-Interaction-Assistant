@@ -1,7 +1,8 @@
 from pathlib import Path
 import re
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 import fitz
+from langchain_core.documents import Document
 import logging
 
 class MedicalPDFLoader:
@@ -108,3 +109,27 @@ class MedicalPDFLoader:
 
         except Exception as e:
             logging.error(f"Error processing {self.file_path}: {e}")
+
+    def read_load_document(self) -> List[Document]:
+
+        logging.info(f"1. READ {self.file_path} AND EXTRACT PARAGRAPHS")
+        pages, total_pages = self._read_pdf()
+
+        logging.info("2. SAVE PARAGRAPHS IN DOCUMENT")
+
+        if not pages:
+            raise ValueError("There isn't information to save")
+        
+        documents = [
+            Document(
+                page_content=content,
+                metadata={
+                    "source": self.file_path,
+                    "page": num_page + 1,
+                    "total_pages": total_pages
+                }
+            )
+            for num_page, content in pages.items()
+        ]
+
+        return documents
