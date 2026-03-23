@@ -74,7 +74,7 @@ class MedicalPDFLoader:
         return paragraphs
 
 
-    def _read_pdf(self) -> List[Tuple[int, str]]:
+    def _read_pdf(self) -> Tuple[Dict[int, str], int]:
 
         try:
             with fitz.open(self.file_path) as doc:
@@ -92,7 +92,19 @@ class MedicalPDFLoader:
 
                 logging.info(f"Finish reading {self.file_path}. Extracted {len(paragraphs)} paragraphs")
 
-                return paragraphs
+                pages = {}
+
+                for paragraph in paragraphs:
+                    num_page = paragraph[0]
+                    text = paragraph[1]
+
+                    if num_page in pages:
+                        pages[num_page] += f"\n {text}"
+
+                    else:
+                        pages[num_page] = text 
+
+                return sorted(pages.items()), len(doc)
 
         except Exception as e:
             logging.error(f"Error processing {self.file_path}: {e}")

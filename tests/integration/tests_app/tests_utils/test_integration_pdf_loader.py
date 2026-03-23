@@ -204,7 +204,7 @@ class TestPdfLoader:
             pdf_path = str(self.base_path / "data" / "corrupt_example.pdf")
 
             pdf_loader = MedicalPDFLoader(pdf_path)
-            paragraphs = pdf_loader._read_pdf()
+            pdf_loader._read_pdf()
 
             assert "Error processing" in caplog.text
 
@@ -213,7 +213,8 @@ class TestPdfLoader:
             pdf_path = str(self.base_path / "data" / "example.pdf")
 
             pdf_loader = MedicalPDFLoader(pdf_path)
-            paragraphs = pdf_loader._read_pdf()
+            pages, total_pages = pdf_loader._read_pdf()
 
-            assert len(paragraphs) == 1
-            assert (0, "This is a PDF example") in paragraphs
+            assert len(pages) == 1
+            assert total_pages == 1
+            assert (0, "This is a PDF example") in pages

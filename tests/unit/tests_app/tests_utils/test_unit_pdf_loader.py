@@ -215,14 +215,15 @@ class TestPdfLoader:
 
             mock_page.get_text.return_value = [(0, 0, 0, 0, "This is a PDF example", 0, 0)]
             mock_doc.__iter__.return_value = [mock_page]
+            mock_doc.__len__.return_value = 1
             mock_fitz_open.return_value.__enter__.return_value = mock_doc
 
             pdf_loader = MedicalPDFLoader(pdf_path)
 
-            paragraphs, total_pages = pdf_loader._read_pdf()
+            pages, total_pages = pdf_loader._read_pdf()
 
-            assert len(paragraphs) == 1
-            assert (0, "This is a PDF example") in paragraphs 
+            assert len(pages) == 1
+            assert (0, "This is a PDF example") in pages 
             assert total_pages == 1
             mock_page.get_text.assert_called_once_with("blocks")     
 
