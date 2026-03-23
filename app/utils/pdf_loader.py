@@ -63,7 +63,7 @@ class MedicalPDFLoader:
                 is_incomplete = not last_paragraph.endswith(('.', ':', '?', '!'))
                 starts_with_low = text[0].islower()
 
-                if is_incomplete or starts_with_low:
+                if is_incomplete and starts_with_low:
                     logging.info("Concatenate last paragraph with current text")
                     paragraphs[-1] = f'{last_paragraph} {text}'
                     continue
