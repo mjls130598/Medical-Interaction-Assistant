@@ -7,6 +7,12 @@ import logging
 
 class MedicalPDFLoader:
     def __init__(self, file_path: str):
+        """
+        Creates a new Medical PDF loader
+
+        Arguments:
+            **file_path**: Medical PDF file path
+        """
 
         path = Path(file_path)
 
@@ -19,6 +25,17 @@ class MedicalPDFLoader:
         self.file_path = file_path  
 
     def _clean_block(self, block:str) -> str:
+        """
+        Clean text block:
+        1. Removing new lines inside words (f.e., ace-\ntil to acetil)
+        2. Joining lines which doesn't start with -, number section or capital letter
+        3. Concatenating multiple spaces in only one
+
+        Returns a string with the cleaned text block
+
+        Arguments:
+            **block**: Text block to clean
+        """
 
         logging.info("Cleaning block")
 
@@ -34,9 +51,18 @@ class MedicalPDFLoader:
         return re.sub(r' +', " ", complete_sentences).strip()
     
     def _create_paragraphs(self, blocks) -> List[Tuple[int, str]]:
+        """
+        Create cleaned paragraphs from fitx text blocks
+
+        Returns a list of tuples (page number -> int, text blocks -> str)
+
+        Arguments:
+            **blocks**: Array of cleaned text blocks
+        """
+
         paragraphs = []
 
-        for idx, (num_page, block) in enumerate(blocks):
+        for idx, (page_num, block) in enumerate(blocks):
             
             logging.info(f"Extracting block nº {idx + 1}")
 
@@ -70,12 +96,18 @@ class MedicalPDFLoader:
                     continue
 
             logging.info("Creating new paragraph")                        
-            paragraphs.append((num_page, text))
+            paragraphs.append((page_num, text))
 
         return paragraphs
 
 
     def _read_pdf(self) -> Tuple[List[Tuple[int, str]], int]:
+        """
+        Read and extract pages from Medical PDF file
+
+        Returns a list of tuples (page number -> int, text block -> str) and
+        total page numbers of the PDF
+        """
 
         try:
             with fitz.open(self.file_path) as doc:
@@ -96,14 +128,14 @@ class MedicalPDFLoader:
                 pages = {}
 
                 for paragraph in paragraphs:
-                    num_page = paragraph[0]
+                    page_num = paragraph[0]
                     text = paragraph[1]
 
-                    if num_page in pages:
-                        pages[num_page] += f"\n {text}"
+                    if page_num in pages:
+                        pages[page_num] += f"\n {text}"
 
                     else:
-                        pages[num_page] = text 
+                        pages[page_num] = text 
 
                 return sorted(pages.items()), len(doc)
 
@@ -111,6 +143,11 @@ class MedicalPDFLoader:
             logging.error(f"Error processing {self.file_path}: {e}")
 
     def read_load_document(self) -> List[Document]:
+        """
+        Read the Medical PDF and save the extracted information into a langchain Document
+
+        Returns a list of langchain documents
+        """
 
         logging.info(f"1. READ {self.file_path} AND EXTRACT PARAGRAPHS")
         pages, total_pages = self._read_pdf()
@@ -125,11 +162,11 @@ class MedicalPDFLoader:
                 page_content=content,
                 metadata={
                     "source": self.file_path,
-                    "page": num_page + 1,
+                    "page": page_num + 1,
                     "total_pages": total_pages
                 }
             )
-            for num_page, content in pages
+            for page_num, content in pages
         ]
 
         return documents
