@@ -45,26 +45,6 @@ class TestPdfLoader:
             assert hasattr(pdfLoader, "file_path")
             assert pdfLoader.file_path == file_path
 
-    class TestReadPdf:
-
-        def test_no_read_pdf(self, caplog):
-            pdf_path = str(self.base_path / "data" / "corrupt_example.pdf")
-
-            pdf_loader = MedicalPDFLoader(pdf_path)
-            paragraphs = pdf_loader._read_pdf()
-
-            assert "Error processing" in caplog.text
-
-
-        def test_read_pdf(self):
-            pdf_path = str(self.base_path / "data" / "example.pdf")
-
-            pdf_loader = MedicalPDFLoader(pdf_path)
-            paragraphs = pdf_loader._read_pdf()
-
-            assert len(paragraphs) == 1
-            assert (0, "This is a PDF example") in paragraphs
-
     class TestCleanBlock:
 
         def test_remove_space_between_sentence(self):
@@ -217,3 +197,23 @@ class TestPdfLoader:
                     assert spy_create.call_count == 1
                     assert spy_clean.called
                     assert spy_clean.call_count == 3
+
+    class TestReadPdf:
+
+        def test_no_read_pdf(self, caplog):
+            pdf_path = str(self.base_path / "data" / "corrupt_example.pdf")
+
+            pdf_loader = MedicalPDFLoader(pdf_path)
+            paragraphs = pdf_loader._read_pdf()
+
+            assert "Error processing" in caplog.text
+
+
+        def test_read_pdf(self):
+            pdf_path = str(self.base_path / "data" / "example.pdf")
+
+            pdf_loader = MedicalPDFLoader(pdf_path)
+            paragraphs = pdf_loader._read_pdf()
+
+            assert len(paragraphs) == 1
+            assert (0, "This is a PDF example") in paragraphs
