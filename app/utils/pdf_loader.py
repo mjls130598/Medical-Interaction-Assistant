@@ -35,6 +35,9 @@ class MedicalPDFLoader:
 
         Arguments:
             **block**: Text block to clean
+
+        Returns:
+            Cleaned text block
         """
 
         logging.info("Cleaning block")
@@ -52,12 +55,13 @@ class MedicalPDFLoader:
     
     def _create_paragraphs(self, blocks) -> List[Tuple[int, str]]:
         """
-        Create cleaned paragraphs from fitx text blocks
-
-        Returns a list of tuples (page number -> int, text blocks -> str)
+        Create cleaned paragraphs from fit text blocks.
 
         Arguments:
             **blocks**: Array of cleaned text blocks
+
+        Returns:
+            **paragraphs**: List of tuples (page number -> int, text blocks -> str)
         """
 
         paragraphs = []
@@ -105,8 +109,9 @@ class MedicalPDFLoader:
         """
         Read and extract pages from Medical PDF file
 
-        Returns a list of tuples (page number -> int, text block -> str) and
-        total page numbers of the PDF
+        Returns
+            **pages**: page number -> int, text block -> str
+            **total_pages**: total page numbers of the PDF
         """
 
         try:
@@ -146,7 +151,8 @@ class MedicalPDFLoader:
         """
         Read the Medical PDF and save the extracted information into a langchain Document
 
-        Returns a list of langchain documents
+        Returns
+            **documents**: a list of langchain documents
         """
 
         logging.info(f"1. READ {self.file_path} AND EXTRACT PARAGRAPHS")
