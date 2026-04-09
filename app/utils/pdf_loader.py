@@ -5,7 +5,7 @@ import fitz
 from langchain_core.documents import Document
 import logging
 
-from utils.metadata_api import MetadataAPI
+from .metadata_api import MetadataAPI
 
 # Patterns to extract metadata from the PDF
 PATTERNS = {
@@ -194,7 +194,9 @@ class MedicalPDFLoader:
                             'content': text
                         }
 
-                return sorted(sections.items()), len(doc)
+                sorted_sections = [v for k, v in sorted(sections.items(), key=lambda item: item[0])]
+
+                return sorted_sections, len(doc)
 
         except Exception as e:
             logging.error(f"Error processing {self.file_path}: {e}")
@@ -210,9 +212,18 @@ class MedicalPDFLoader:
 
         logging.info(f"1. READ {self.file_path} AND EXTRACT METADATA AND PARAGRAPHS")
         sections, total_pages = self._read_pdf()
-        cima_id = re.search(PATTERNS["cima_id"],
-                     "\n".join([section['content'] for section in sections])).group(1)
-        metadata = MetadataAPI().fetch_metadata(cima_id) if cima_id else {}
+        full_text = "\n".join([s['content'] for s in sections])
+        
+        cima_id_match = re.search(PATTERNS["cima_id"], full_text)
+        cima_id = cima_id_match.group(1) if cima_id_match else None
+
+        cima_metadata = {}
+        if cima_id:
+            logging.info(f"Enriqueciendo datos con ID de CIMA: {cima_id}")
+            cima_client = MetadataAPI()
+            cima_metadata = cima_client.fetch_metadata(cima_id)
+        else:
+            logging.warning("No se encontró ID de CIMA en el texto del PDF")
 
         logging.info("2. SAVE PARAGRAPHS IN DOCUMENT")
 
@@ -223,7 +234,7 @@ class MedicalPDFLoader:
             Document(
                 page_content=section['content'],
                 metadata={
-                    **metadata,
+                    **cima_metadata,
                     'page': section['page_num'],
                     'section_id': section['section_id'],
                     'section_title': section['section_title'],
