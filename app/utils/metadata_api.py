@@ -31,7 +31,7 @@ class MetadataAPI:
                 "med_id": cima_id,
                 "source": f"https://cima.aemps.es/cima/dochtml/p/{cima_id}/",
                 "med_name": data.get("nombre"),
-                "active_principle": data.get("pincipiosActivos", [{}])[0].get("nombre", ""),
+                "active_principle": [princ.get("nombre", "") for princ in data.get("principiosActivos", [{}])],
                 "last_updated": data.get("docs")[-1].get("fecha"),
                 "atcs": data.get("atcs", [])[0].get("nombre", ""),
                 "excipients": data.get("excipientes", ""),
