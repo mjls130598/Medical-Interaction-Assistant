@@ -177,8 +177,8 @@ class TestPdfLoader:
             loader = MedicalPDFLoader("test.pdf")
             sections, total = loader._read_pdf()
             assert total == 1
-            assert sections[0][0] == "1"
-            assert "Texto." in sections[0][1]["content"]
+            assert sections[0]["section_id"] == "1"
+            assert "Texto." in sections[0]["content"]
 
     # -------------------------------------------------------------------------
     # Method: read_load_document

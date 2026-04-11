@@ -212,7 +212,7 @@ class MedicalPDFLoader:
 
         logging.info(f"1. READ {self.file_path} AND EXTRACT METADATA AND PARAGRAPHS")
         sections, total_pages = self._read_pdf()
-        full_text = "\n".join([s['content'] for s in sections])
+        full_text = "\n".join([content['content'] for section, content in sections])
         
         cima_id_match = re.search(PATTERNS["cima_id"], full_text)
         cima_id = cima_id_match.group(1) if cima_id_match else None
@@ -232,16 +232,16 @@ class MedicalPDFLoader:
         
         documents = [
             Document(
-                page_content=section['content'],
+                page_content=content['content'],
                 metadata={
                     **cima_metadata,
-                    'page': section['page_num'],
-                    'section_id': section['section_id'],
-                    'section_title': section['section_title'],
+                    'page': content['page_num'],
+                    'section_id': content['section_id'],
+                    'section_title': content['section_title'],
                     'total_pages': total_pages,
                 }
             )
-            for section in sections
+            for section, content in sections
         ]
 
         return documents

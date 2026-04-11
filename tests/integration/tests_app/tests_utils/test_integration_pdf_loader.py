@@ -186,6 +186,41 @@ class TestPdfLoader:
                 assert spy_clean.call_count == 1
 
     # -------------------------------------------------------------------------
+    # Extract Section Tests
+    # -------------------------------------------------------------------------
+
+    class TestExtractSection:
+
+        def test_extract_valid_section(self):
+            """Check that a valid section header is correctly parsed."""
+
+            pdf_path = str(self.base_path / "data" / "section.pdf")
+            pdf_loader = MedicalPDFLoader(pdf_path)
+
+
+            with patch.object(MedicalPDFLoader, '_clean_block', wraps=pdf_loader._extract_section) as spy_extract:
+                read_paragraphs, total_pages = pdf_loader._read_pdf()
+                print(read_paragraphs)
+
+                assert read_paragraphs[0]['section_id'] == '1.3'
+                assert read_paragraphs[0]['section_title'] == 'Posología y forma de administración'
+                assert spy_extract.called
+                assert spy_extract.call_count == 1
+
+        def test_extract_invalid_section(self):
+            """Check that non-section text returns None, None."""
+
+            pdf_path = str(self.base_path / "data" / "complete_word.pdf")
+            pdf_loader = MedicalPDFLoader(pdf_path)
+            
+            with patch.object(MedicalPDFLoader, '_clean_block', wraps=pdf_loader._extract_section) as spy_extract:
+                read_paragraphs, total_pages = pdf_loader._read_pdf()
+
+                assert read_paragraphs[0]['section_id'] == '0'
+                assert read_paragraphs[0]['section_title'] == 'Introduction'
+                assert spy_extract.called
+                assert spy_extract.call_count == 1
+    # -------------------------------------------------------------------------
     # Create Paragraphs Tests
     # -------------------------------------------------------------------------
 
@@ -310,7 +345,6 @@ class TestPdfLoader:
             """Check that the PDF content is correctly converted into a LangChain Document with combined metadata."""
             
             pdf_path = str(self.base_path / "data" / "example.pdf")
-
             pdf_loader = MedicalPDFLoader(pdf_path)
 
             with patch.object(MedicalPDFLoader, '_read_pdf', wraps=pdf_loader._read_pdf) as spy_read:
