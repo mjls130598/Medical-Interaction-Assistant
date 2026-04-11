@@ -223,7 +223,7 @@ class MedicalPDFLoader:
             cima_client = MetadataAPI()
             cima_metadata = cima_client.fetch_metadata(cima_id)
         else:
-            logging.warning("No se encontró ID de CIMA en el texto del PDF")
+            logging.warning("Didn't find CIMA ID in PDF text")
 
         logging.info("2. SAVE PARAGRAPHS IN DOCUMENT")
 
