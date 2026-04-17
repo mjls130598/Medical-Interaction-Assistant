@@ -212,7 +212,7 @@ class MedicalPDFLoader:
 
         logging.info(f"1. READ {self.file_path} AND EXTRACT METADATA AND PARAGRAPHS")
         sections, total_pages = self._read_pdf()
-        full_text = "\n".join([content['content'] for section, content in sections])
+        full_text = "\n".join([content['content'] for content in sections])
         
         cima_id_match = re.search(PATTERNS["cima_id"], full_text)
         cima_id = cima_id_match.group(1) if cima_id_match else None
@@ -241,7 +241,7 @@ class MedicalPDFLoader:
                     'total_pages': total_pages,
                 }
             )
-            for section, content in sections
+            for content in sections
         ]
 
         return documents
