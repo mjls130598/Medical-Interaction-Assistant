@@ -153,7 +153,7 @@ class TestPdfLoader:
     # -------------------------------------------------------------------------
     class TestReadPdf:
 
-        @patch("app.utils.pdf_loader.fitz.open")
+        @patch("app.rag.pdf_loader.fitz.open")
         def test_read_pdf_error(self, mock_fitz_open, fs, caplog):
             """Check that errors during PDF opening are logged and return None."""
             fs.create_file("corrupt.pdf")
@@ -163,7 +163,7 @@ class TestPdfLoader:
             assert "Error processing" in caplog.text
             assert result is None
 
-        @patch("app.utils.pdf_loader.fitz.open")
+        @patch("app.rag.pdf_loader.fitz.open")
         def test_read_pdf_success(self, mock_fitz_open, fs):
             """Check that the PDF content is correctly grouped by section and page count is accurate."""
             fs.create_file("test.pdf")
@@ -185,8 +185,8 @@ class TestPdfLoader:
     # -------------------------------------------------------------------------
     class TestReadLoadDocument:
 
-        @patch("app.utils.pdf_loader.MetadataAPI")
-        @patch("app.utils.pdf_loader.re.search")
+        @patch("app.rag.pdf_loader.MetadataAPI")
+        @patch("app.rag.pdf_loader.re.search")
         def test_read_load_document_success(self, mock_re_search, mock_metadata_api, fs):
             """Check that LangChain Document objects are created with correct content and combined metadata."""
             fs.create_file("test.pdf")
