@@ -188,23 +188,18 @@ class TestPdfLoader:
         @patch("app.rag.pdf_loader.MetadataAPI")
         @patch("app.rag.pdf_loader.re.search")
         def test_read_load_document_success(self, mock_re_search, mock_metadata_api, fs):
-            """Verifica que se creen Documentos de LangChain con contenido y metadatos combinados."""
+            """Verify that LangChain Documents are created with combined content and metadata."""
             
-            # 1. Preparar archivo falso
             fs.create_file("test.pdf")
             loader = MedicalPDFLoader("test.pdf")
             
-            # 2. Mock de Regex (CIMA ID)
             mock_match = MagicMock()
             mock_match.group.return_value = "12345"
             mock_re_search.return_value = mock_match
-            
-            # 3. Mock de API de Metadatos
+        
             mock_api_instance = mock_metadata_api.return_value
             mock_api_instance.fetch_metadata.return_value = {"medicine": "X"}
 
-            # 4. Corregir la estructura de fake_sections para que coincida con el código:
-            # El código hace: for content in sections -> content['content']
             fake_sections = [
                 {
                     "page_num": 1, 
@@ -227,11 +222,10 @@ class TestPdfLoader:
                 assert docs[0].metadata["total_pages"] == 1
 
         def test_read_load_document_empty_error(self, fs):
-            """Verifica que se lance ValueError si no hay contenido."""
+            """Verify that a ValueError is raised if no content is found."""
             fs.create_file("empty.pdf")
             loader = MedicalPDFLoader("empty.pdf")
             
-            # Simulamos que el PDF no tiene secciones
             with patch.object(MedicalPDFLoader, '_read_pdf', return_value=([], 0)):
                 with pytest.raises(ValueError, match="There isn't information to save"):
                     loader.read_load_document()
