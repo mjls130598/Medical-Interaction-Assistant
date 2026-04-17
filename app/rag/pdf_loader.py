@@ -5,6 +5,13 @@ import fitz
 from langchain_core.documents import Document
 import logging
 
+from .metadata_api import MetadataAPI
+
+# Patterns to extract metadata from the PDF
+PATTERNS = {
+    "cima_id": r"https://cima\.aemps\.es/cima/dochtml/p/(\d+)/"
+}
+
 class MedicalPDFLoader:
     def __init__(self, file_path: str):
         """
@@ -35,6 +42,9 @@ class MedicalPDFLoader:
 
         Arguments:
             **block**: Text block to clean
+
+        Returns:
+            Cleaned text block
         """
 
         logging.info("Cleaning block")
@@ -50,17 +60,40 @@ class MedicalPDFLoader:
         # 3. Concatenate multiple spaces in only one
         return re.sub(r' +', " ", complete_sentences).strip()
     
-    def _create_paragraphs(self, blocks) -> List[Tuple[int, str]]:
+    def _extract_section(self, text: str) -> str:
         """
-        Create cleaned paragraphs from fitx text blocks
+        Extract a section of the text using a regex pattern
 
-        Returns a list of tuples (page number -> int, text blocks -> str)
+        Arguments:
+            **text**: Text to extract the section from
+
+        Returns:
+            Extracted section
+        """
+
+        logging.info("Extracting section")
+
+        pattern = r'^(\d+(?:\.\d+)*)\.?\s+([A-ZÁÉÍÓÚ][^.\n]+)'
+        match = re.search(pattern, text)
+
+        if match:
+            return match.group(1), match.group(2).strip()
+        return None, None
+    
+    def _create_paragraphs(self, blocks) -> List[dict]:
+        """
+        Create cleaned paragraphs from fit text blocks.
 
         Arguments:
             **blocks**: Array of cleaned text blocks
+
+        Returns:
+            **paragraphs**: List of paragraphs with page number, content, section id and section title
         """
 
         paragraphs = []
+        current_section_id = "0"
+        current_section_title = "Introduction"
 
         for idx, (page_num, block) in enumerate(blocks):
             
@@ -71,13 +104,23 @@ class MedicalPDFLoader:
                 logging.info("Not text")
                 continue
 
+            text = block[4]
+
+            # Extract section from the text
+            sec_id, sec_title = self._extract_section(text)
+
+            if sec_id:
+                logging.info(f"New section found: {sec_id} {sec_title}")
+                current_section_id = sec_id
+                current_section_title = sec_title
+
             page_pattern = r'\b\d+\s+de\s+\d+\b'
 
-            if re.search(page_pattern, block[4]):
+            if re.search(page_pattern, text):
                 logging.info("Removing page number")
                 continue
 
-            text = self._clean_block(block[4])
+            text = self._clean_block(text)
             
             # If there isn't text
             if not text:
@@ -86,17 +129,22 @@ class MedicalPDFLoader:
             
             if paragraphs:
                 logging.info("Checking if the last paragraph is not complete and the current text is from the last paragraph")
-                last_paragraph = paragraphs[-1][1]
+                last_paragraph = paragraphs[-1]['content']
                 is_incomplete = not last_paragraph.endswith(('.', ':', '?', '!'))
                 starts_with_low = text[0].islower()
 
                 if is_incomplete and starts_with_low:
                     logging.info("Concatenate last paragraph with current text")
-                    paragraphs[-1] = (paragraphs[-1][0], f'{last_paragraph} {text}')
+                    paragraphs[-1]['content'] += f" {text}"
                     continue
 
             logging.info("Creating new paragraph")                        
-            paragraphs.append((page_num, text))
+            paragraphs.append({
+                "page_num": page_num, 
+                "content": text,
+                "section_id": current_section_id,
+                "section_title": current_section_title
+            })
 
         return paragraphs
 
@@ -105,8 +153,9 @@ class MedicalPDFLoader:
         """
         Read and extract pages from Medical PDF file
 
-        Returns a list of tuples (page number -> int, text block -> str) and
-        total page numbers of the PDF
+        Returns
+            **sections**: section ID -> str, section data -> dict with section title, page number and content
+            **total_pages**: total page numbers of the PDF
         """
 
         try:
@@ -125,48 +174,73 @@ class MedicalPDFLoader:
 
                 logging.info(f"Finish reading {self.file_path}. Extracted {len(paragraphs)} paragraphs")
 
-                pages = {}
+                sections = {}
 
                 for paragraph in paragraphs:
-                    page_num = paragraph[0]
-                    text = paragraph[1]
+                    page_num = paragraph['page_num']
+                    text = paragraph['content']
+                    section_id = paragraph['section_id']
+                    section_title = paragraph['section_title']
 
-                    if page_num in pages:
-                        pages[page_num] += f"\n {text}"
+                    if section_id in sections:
+                        sections[section_id]['content'] += f"\n {text}"
 
                     else:
-                        pages[page_num] = text 
+                        sections[section_id] = {
+                            'section_id': section_id,
+                            'section_title': section_title,
+                            'page_num': page_num + 1,
+                            'content': text
+                        }
 
-                return sorted(pages.items()), len(doc)
+                sorted_sections = [v for k, v in sorted(sections.items(), key=lambda item: item[0])]
+
+                return sorted_sections, len(doc)
 
         except Exception as e:
             logging.error(f"Error processing {self.file_path}: {e}")
+
 
     def read_load_document(self) -> List[Document]:
         """
         Read the Medical PDF and save the extracted information into a langchain Document
 
-        Returns a list of langchain documents
+        Returns
+            **documents**: a list of langchain documents
         """
 
-        logging.info(f"1. READ {self.file_path} AND EXTRACT PARAGRAPHS")
-        pages, total_pages = self._read_pdf()
+        logging.info(f"1. READ {self.file_path} AND EXTRACT METADATA AND PARAGRAPHS")
+        sections, total_pages = self._read_pdf()
+        full_text = "\n".join([content['content'] for content in sections])
+        
+        cima_id_match = re.search(PATTERNS["cima_id"], full_text)
+        cima_id = cima_id_match.group(1) if cima_id_match else None
+
+        cima_metadata = {}
+        if cima_id:
+            logging.info(f"Enriqueciendo datos con ID de CIMA: {cima_id}")
+            cima_client = MetadataAPI()
+            cima_metadata = cima_client.fetch_metadata(cima_id)
+        else:
+            logging.warning("Didn't find CIMA ID in PDF text")
 
         logging.info("2. SAVE PARAGRAPHS IN DOCUMENT")
 
-        if not pages:
+        if not sections:
             raise ValueError("There isn't information to save")
         
         documents = [
             Document(
-                page_content=content,
+                page_content=content['content'],
                 metadata={
-                    "source": self.file_path,
-                    "page": page_num + 1,
-                    "total_pages": total_pages
+                    **cima_metadata,
+                    'page': content['page_num'],
+                    'section_id': content['section_id'],
+                    'section_title': content['section_title'],
+                    'total_pages': total_pages,
                 }
             )
-            for page_num, content in pages
+            for content in sections
         ]
 
         return documents
