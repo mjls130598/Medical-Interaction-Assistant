@@ -197,13 +197,12 @@ class TestPdfLoader:
             pdf_path = str(self.base_path / "data" / "section.pdf")
             pdf_loader = MedicalPDFLoader(pdf_path)
 
-
-            with patch.object(MedicalPDFLoader, '_clean_block', wraps=pdf_loader._extract_section) as spy_extract:
+            with patch.object(MedicalPDFLoader, '_extract_section', wraps=pdf_loader._extract_section) as spy_extract:
                 read_paragraphs, total_pages = pdf_loader._read_pdf()
                 print(read_paragraphs)
 
-                assert read_paragraphs[0]['section_id'] == '1.3'
-                assert read_paragraphs[0]['section_title'] == 'Posología y forma de administración'
+                assert read_paragraphs[0]['section_id'] == '1'
+                assert read_paragraphs[0]['section_title'] == 'Qué es acetilcisteína cinfa  y para qué se utiliza'
                 assert spy_extract.called
                 assert spy_extract.call_count == 1
 

@@ -113,7 +113,6 @@ class MedicalPDFLoader:
                 logging.info(f"New section found: {sec_id} {sec_title}")
                 current_section_id = sec_id
                 current_section_title = sec_title
-                continue
 
             page_pattern = r'\b\d+\s+de\s+\d+\b'
 
