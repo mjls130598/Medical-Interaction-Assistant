@@ -2,7 +2,7 @@ from pathlib import Path
 from unittest.mock import patch
 import pytest
 
-from app.utils.pdf_loader import MedicalPDFLoader
+from app.rag.pdf_loader import MedicalPDFLoader
 
 class TestPdfLoader:
 

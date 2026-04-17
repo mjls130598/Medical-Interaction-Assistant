@@ -3,7 +3,7 @@ from langchain_core.documents import Document
 
 import pytest
 
-from app.utils.pdf_loader import MedicalPDFLoader
+from app.rag.pdf_loader import MedicalPDFLoader
 
 class TestPdfLoader:
 
