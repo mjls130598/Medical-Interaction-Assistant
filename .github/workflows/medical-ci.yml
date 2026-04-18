@@ -41,3 +41,7 @@ jobs:
     - name: Ejecutar pruebas de integración
       run: |
         pipenv run pytest tests/integration/
+
+    - name: Comprobación de cobertura de código
+      run: |
+        pipenv run pytest tests/unit/ --cov=. --cov-report=term-missing

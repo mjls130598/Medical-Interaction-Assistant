@@ -15,6 +15,7 @@ python-dotenv = "*"
 
 [dev-packages]
 pytest = "*"
+pytest-cov = "*"
 pyfakefs = "*"
 flake8 = "*"
 bandit = "*"
