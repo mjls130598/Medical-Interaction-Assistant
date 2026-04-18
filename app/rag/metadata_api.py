@@ -23,7 +23,7 @@ class MetadataAPI:
         """
 
         try:
-            response = requests.get(url=self.base_url, params={"nregistro": cima_id})
+            response = requests.get(url=self.base_url, params={"nregistro": cima_id}, timeout=10)
             response.raise_for_status()
             data = response.json()
 
