@@ -42,7 +42,8 @@ class TestMetadataAPI:
         # Verificar que la URL de requests fue la correcta
         mock_get.assert_called_once_with(
             url="https://cima.aemps.es/cima/rest/medicamento", 
-            params={"nregistro": cima_id}
+            params={"nregistro": cima_id},
+            timeout=10
         )
 
     @patch("requests.get")
