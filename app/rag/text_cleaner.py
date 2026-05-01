@@ -1,38 +1,12 @@
+from abc import ABC, abstractmethod
 import logging
 import re
 from typing import List
 
 
-class TextCleaner:
-    def _clean_block(self, block:str) -> str:
-        """
-        Clean text block:
-        1. Removing new lines inside words (f.e., ace-\ntil to acetil)
-        2. Joining lines which doesn't start with -, number section or capital letter
-        3. Concatenating multiple spaces in only one
+class TextCleaner(ABC):
 
-        Returns a string with the cleaned text block
-
-        Arguments:
-            **block**: Text block to clean
-
-        Returns:
-            Cleaned text block
-        """
-
-        logging.info("Cleaning block")
-
-        # 1. Remove new lines inside words
-        # For example: "ace- \n tilcisteína" -> "acetilcisteína"
-        complete_words = re.sub(r'-\s*\n\s*', '', block)
-
-        # 2. Join lines which doesn't start with -, number or capital letter 
-        pattern = r'\n(?!\s*(?:[-•]|(?:\d+[.)\s])|[A-ZÁÉÍÓÚ]))'
-        complete_sentences = re.sub(pattern, ' ', complete_words)
-        
-        # 3. Concatenate multiple spaces in only one
-        return re.sub(r' +', " ", complete_sentences).strip()
-    
+    @abstractmethod
     def _extract_section(self, text: str) -> str:
         """
         Extract a section of the text using a regex pattern
@@ -43,42 +17,58 @@ class TextCleaner:
         Returns:
             Extracted section
         """
-
-        logging.info("Extracting section")
-
-        pattern = r'^(\d+(?:\.\d+)*)\.?\s+([A-ZÁÉÍÓÚ][^.\n]+)'
-        match = re.search(pattern, text)
-
-        if match:
-            return match.group(1), match.group(2).strip()
-        return None, None
+        pass
     
-    @staticmethod
-    def create_paragraphs(self, blocks) -> List[dict]:
+    def _clean_line(self, line:str) -> str:
+        """
+        Clean text line by applying the following transformations:
+        1. Removing new lines inside words (f.e., ace-\ntil to acetil)
+        2. Joining lines which doesn't start with -, number section or capital letter
+        3. Concatenating multiple spaces in only one
+
+        Returns a string with the cleaned text line
+
+        Arguments:
+            **line**: Text line to clean
+
+        Returns:
+            Cleaned text line
+        """
+
+        logging.info("Cleaning line")
+
+        # 1. Remove new lines inside words
+        # For example: "ace- \n tilcisteína" -> "acetilcisteína"
+        complete_words = re.sub(r'-\s*\n\s*', '', line)
+
+        # 2. Join lines which doesn't start with -, number or capital letter 
+        pattern = r'\n(?!\s*(?:[-•]|(?:\d+[.)\s])|[A-ZÁÉÍÓÚ]))'
+        complete_sentences = re.sub(pattern, ' ', complete_words)
+        
+        # 3. Concatenate multiple spaces in only one
+        return re.sub(r' +', " ", complete_sentences).strip()
+    
+
+    def create_paragraphs(self, text: str) -> List[dict]:
         """
         Create cleaned paragraphs from fit text blocks.
 
         Arguments:
-            **blocks**: Array of cleaned text blocks
+            **text**: Text extracted from the document as string
 
         Returns:
-            **paragraphs**: List of paragraphs with page number, content, section id and section title
+            **paragraphs**: List of paragraphs with content, section id and section title
         """
+
+        lines = text.splitlines()
 
         paragraphs = []
         current_section_id = "0"
         current_section_title = "Introduction"
 
-        for idx, (page_num, block) in enumerate(blocks):
+        for idx, text in enumerate(lines):
             
-            logging.info(f"Extracting block nº {idx + 1}")
-
-            # If it's not a text
-            if block[6] != 0:
-                logging.info("Not text")
-                continue
-
-            text = block[4]
+            logging.info(f"Extracting line nº {idx + 1}")
 
             # Extract section from the text
             sec_id, sec_title = self._extract_section(text)
@@ -94,7 +84,7 @@ class TextCleaner:
                 logging.info("Removing page number")
                 continue
 
-            text = self._clean_block(text)
+            text = self._clean_line(text)
             
             # If there isn't text
             if not text:

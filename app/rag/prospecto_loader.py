@@ -1,24 +1,28 @@
 import logging
+from typing import List
 
 import requests
 
+from langchain_core.documents import Document
+
 from rag.document_loader import DocumentLoader
 from rag.document_reader import DocumentReader
+from rag.text_cleaner import TextCleaner
 
 
 class ProspectoLoader(DocumentLoader):
-    def __init__(self, reader: DocumentReader, source:str, cima_id: str):
+    def __init__(self, reader: DocumentReader, cleaner: TextCleaner, source:str, cima_id: str):
         """
         Prospecto reader to read the prospecto PDF from CIMA website
 
         Arguments:
             **reader**: Document reader to read the prospecto PDF
+            **cleaner**: Text cleaner to clean the extracted text
             **source**: The source from which to read the document (e.g., file path, URL)
             **cima_id**: CIMA ID of the prospecto to read
         """
 
-        self.reader = reader
-        self.source = source
+        super().__init__(reader, cleaner, source)
         self.cima_id = cima_id
 
     def _get_metadata(self) -> dict:
@@ -58,3 +62,27 @@ class ProspectoLoader(DocumentLoader):
         except Exception as e:
             logging.error(f"Error fetching metadata for CIMA ID {self.cima_id}: {e}")
             raise RuntimeError(f"Error fetching metadata for CIMA ID {self.cima_id}: {e}")
+        
+    def create_document(self, metadata: dict, sections: List[dict]) -> List[Document]:
+        """
+        Creates a list of Documents with the content and metadata of the prospecto to load
+
+        Returns:
+            **documents**: List of Documents with the content and metadata of the prospecto to load
+        """
+
+        logging.info("Creating documents with content and metadata")
+
+        documents = [
+            Document(
+                page_content=section['content'],
+                metadata={
+                    **metadata,
+                    'section_id': section['section_id'],
+                    'section_title': section['section_title']
+                }
+            )
+            for section in sections
+        ]
+
+        return documents
