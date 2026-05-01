@@ -1,11 +1,9 @@
 import logging
 from pathlib import Path
-from typing import List, Tuple
 
 import fitz
 
 from rag.document_reader import DocumentReader
-from rag.text_cleaner import TextCleaner
 
 
 class PDFReader(DocumentReader):
@@ -25,16 +23,15 @@ class PDFReader(DocumentReader):
 
         return path.is_file() and path.suffix.lower() == ".pdf"
 
-    def read(self, source: str) -> List[Tuple[int, str]]:
+    def read(self, source: str) -> str:
         """
-        Reads a PDF document from the given source and returns its content as a list of sections.
+        Reads a PDF document from the given source and returns its content as a string.
 
         Arguments:
             **source**: The file path of the PDF document to read
 
         Returns:
-            **content**: The content of the PDF document as a list of sorted sections, 
-            where each section is a tuple of (section_id, section_title, content)
+            **content**: The content of the PDF document as a string
         """
 
         if not self._is_valid_pdf(source):
@@ -45,37 +42,27 @@ class PDFReader(DocumentReader):
                 
                 logging.info(f"Reading {source}")
 
-                logging.info("Extracting blocks from document")
-                all_blocks = (
-                    (num_page, block) for num_page, page in enumerate(doc)
-                    for block in page.get_text("blocks") # read paragraphs instead of lines
-                )
-                
-                logging.info("Extracting paragraphs from blocks")
-                paragraphs = TextCleaner.create_paragraphs(all_blocks)
+                # 1. Extracting text blocks from each page that are not empty
+                # block[4] is the text, block[6] is the type (0 = text)
+                blocks = [
+                    block[4].strip() 
+                    for page in doc 
+                    for block in page.get_text("blocks") 
+                    if block[6] == 0 and block[4].strip()
+                ]
 
-                logging.info(f"Finish reading {source}. Extracted {len(paragraphs)} paragraphs")
+                # 2. Joining the text blocks into a single string with newlines
+                content = "\n".join(blocks)
 
-                sections = {}
+                # 3. Quick check for the log
+                if not content:
+                    logging.warning(f"The document {source} seems to be empty or scanned (OCR needed)")
+                    raise RuntimeError(f"Document {source} is empty or requires OCR")
+                else:
+                    logging.info(f"Successful read: {len(content)} characters extracted from {source}")
 
-                for paragraph in paragraphs:
-                    text = paragraph['content']
-                    section_id = paragraph['section_id']
-                    section_title = paragraph['section_title']
-
-                    if section_id in sections:
-                        sections[section_id]['content'] += f"\n {text}"
-
-                    else:
-                        sections[section_id] = {
-                            'section_id': section_id,
-                            'section_title': section_title,
-                            'content': text
-                        }
-
-                sorted_sections = [v for k, v in sorted(sections.items(), key=lambda item: item[0])]
-
-                return sorted_sections
+                return content
 
         except Exception as e:
             logging.error(f"Error processing {source}: {e}")
+            raise RuntimeError(f"Error processing {source}: {e}")
