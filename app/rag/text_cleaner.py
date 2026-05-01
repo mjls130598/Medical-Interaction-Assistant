@@ -114,7 +114,6 @@ class TextCleaner:
 
             logging.info("Creating new paragraph")                        
             paragraphs.append({
-                "page_num": page_num, 
                 "content": text,
                 "section_id": current_section_id,
                 "section_title": current_section_title

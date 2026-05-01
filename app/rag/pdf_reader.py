@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import List, Tuple
 
 import fitz
 
@@ -24,15 +25,16 @@ class PDFReader(DocumentReader):
 
         return path.is_file() and path.suffix.lower() == ".pdf"
 
-    def read(self, source: str) -> str:
+    def read(self, source: str) -> List[Tuple[int, str]]:
         """
-        Reads a PDF document from the given source and returns its content as a string.
+        Reads a PDF document from the given source and returns its content as a list of sections.
 
         Arguments:
             **source**: The file path of the PDF document to read
 
         Returns:
-            **content**: The content of the PDF document as a string
+            **content**: The content of the PDF document as a list of sorted sections, 
+            where each section is a tuple of (section_id, section_title, content)
         """
 
         if not self._is_valid_pdf(source):
@@ -57,7 +59,6 @@ class PDFReader(DocumentReader):
                 sections = {}
 
                 for paragraph in paragraphs:
-                    page_num = paragraph['page_num']
                     text = paragraph['content']
                     section_id = paragraph['section_id']
                     section_title = paragraph['section_title']
@@ -69,13 +70,12 @@ class PDFReader(DocumentReader):
                         sections[section_id] = {
                             'section_id': section_id,
                             'section_title': section_title,
-                            'page_num': page_num + 1,
                             'content': text
                         }
 
                 sorted_sections = [v for k, v in sorted(sections.items(), key=lambda item: item[0])]
 
-                return sorted_sections, len(doc)
+                return sorted_sections
 
         except Exception as e:
             logging.error(f"Error processing {source}: {e}")
