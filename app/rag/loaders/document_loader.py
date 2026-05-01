@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 import logging
 from typing import List, Tuple
 
-from rag.document_reader import DocumentReader
+from rag.readers.document_reader import DocumentReader
 from langchain_core.documents import Document
 
-from rag.text_cleaner import TextCleaner
+from rag.cleaners.text_cleaner import TextCleaner
 
 
 class DocumentLoader(ABC):

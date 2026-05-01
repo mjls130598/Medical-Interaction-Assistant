@@ -5,9 +5,9 @@ import requests
 
 from langchain_core.documents import Document
 
-from rag.document_loader import DocumentLoader
-from rag.document_reader import DocumentReader
-from rag.text_cleaner import TextCleaner
+from rag.loaders.document_loader import DocumentLoader
+from rag.readers.document_reader import DocumentReader
+from rag.cleaners.text_cleaner import TextCleaner
 
 
 class ProspectoLoader(DocumentLoader):
