@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import logging
-from typing import List, Tuple
+from typing import List
 
 from rag.readers.document_reader import DocumentReader
 from langchain_core.documents import Document
@@ -35,7 +35,7 @@ class DocumentLoader(ABC):
         pass
         
     @abstractmethod
-    def create_document(self, metadata: dict, sections: List[dict]) -> List[Document]:
+    def create_document(self) -> List[Document]:
         """
         Creates a list of Documents with the content and metadata of the document to load
 
@@ -45,15 +45,18 @@ class DocumentLoader(ABC):
         
         pass
     
-    def get_text_metadata(self) -> Tuple[dict, List[dict]]:
+    def get_sections(self) -> List[dict]:
+
+        """
+        Gets the sections of the document to load by reading the document and creating sections with the cleaner
+        Returns:
+            **sections**: List of sections with content, section id and section title
+        """
 
         logging.info(f"Getting text from {self.source}")
         raw_text = self.reader.read(self.source)
-        
-        logging.info("Getting metadata for the document")        
-        metadata = self._get_metadata()
 
         logging.info("Creating sections from the document")
         sections = self.cleaner.create_paragraphs(raw_text)
         
-        return metadata, sections
+        return sections

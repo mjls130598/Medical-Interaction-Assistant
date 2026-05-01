@@ -63,15 +63,20 @@ class ProspectoLoader(DocumentLoader):
             logging.error(f"Error fetching metadata for CIMA ID {self.cima_id}: {e}")
             raise RuntimeError(f"Error fetching metadata for CIMA ID {self.cima_id}: {e}")
         
-    def create_document(self, metadata: dict, sections: List[dict]) -> List[Document]:
+    def create_document(self) -> List[Document]:
         """
         Creates a list of Documents with the content and metadata of the prospecto to load
 
         Returns:
             **documents**: List of Documents with the content and metadata of the prospecto to load
         """
+        
+        logging.info("Getting metadata for the document")        
+        metadata = self._get_metadata()
 
         logging.info("Creating documents with content and metadata")
+
+        sections = self.get_sections()
 
         documents = [
             Document(
