@@ -18,8 +18,8 @@ class ProspectoCleaner(TextCleaner):
 
         logging.info("Extracting section")
 
-        pattern = r'^(\d+(?:\.\d+)*)\.?\s+([A-ZÁÉÍÓÚ][^.\n]+)'
-        match = re.search(pattern, text)
+        pattern = r'^(\d+(?:\.\d+)*)\.\s+([A-ZÁÉÍÓÚ][^\n]+)'
+        match = re.search(pattern, text, re.MULTILINE)
 
         if match:
             return match.group(1), match.group(2).strip()
