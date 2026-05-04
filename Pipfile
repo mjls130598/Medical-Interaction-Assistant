@@ -12,13 +12,14 @@ chromadb = "*"
 pymupdf = "*"
 uvicorn = "*"
 python-dotenv = "*"
+pyfakefs = "*"
 
 [dev-packages]
-pytest = "*"
-pytest-cov = "*"
-pyfakefs = "*"
-flake8 = "*"
-bandit = "*"
+pytest = "8.0.0"
+pytest-cov = "4.0.0"
+pyfakefs = "5.3.0"
+flake8 = "6.0.0"
+bandit = "1.7.0"
 
 [requires]
 python_version = "3.12"
