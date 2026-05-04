@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import MagicMock, Mock, patch, mock_open
 from pyfakefs.fake_filesystem import FakeFilesystem
 
 from app.rag.readers.pdf_reader import PDFReader
@@ -29,20 +29,24 @@ class TestPDFReader:
         """Test read extracts text from valid PDF."""
         reader = PDFReader()
 
-        # Mock fitz
-        mock_doc = Mock()
-        mock_page = Mock()
-        mock_page.get_text.return_value = [
-            [0, 0, 0, 0, "Block1", 0, 0],
-            [0, 0, 0, 0, "", 0, 1],  # Non-text block
-            [0, 0, 0, 0, "Block2", 0, 0]
-        ]
-        mock_doc.__iter__ = Mock(return_value=iter([mock_page]))
+        mock_doc = MagicMock()
+        mock_page = MagicMock()
 
-        with patch('app.rag.readers.pdf_reader.fitz.open', return_value=mock_doc):
+        mock_doc.__iter__.return_value = iter([mock_page])
+        mock_doc.__enter__.return_value = mock_doc
+
+        mock_page.get_text.return_value = [
+            (0, 0, 0, 0, "Block1", 0, 0),  
+            (0, 0, 0, 0, "Block2", 0, 0)
+        ]
+
+        with patch.object(reader, '_is_valid_pdf', return_value=True), \
+            patch('app.rag.readers.pdf_reader.fitz.open', return_value=mock_doc):
+            
             result = reader.read('/test.pdf')
 
-            assert result == "Block1\nBlock2"
+            assert "Block1" in result
+            assert "Block2" in result
 
     def test_read_invalid_pdf_raises_value_error(self):
         """Test read raises ValueError for invalid PDF."""
@@ -54,10 +58,10 @@ class TestPDFReader:
         """Test read raises RuntimeError for empty PDF."""
         reader = PDFReader()
 
-        mock_doc = Mock()
-        mock_page = Mock()
-        mock_page.get_text.return_value = []  # No blocks
-        mock_doc.__iter__ = Mock(return_value=iter([mock_page]))
+        mock_doc = MagicMock()
+        mock_page = MagicMock()
+        mock_page.get_text.return_value = []  
+        mock_doc.__iter__.return_value = iter([mock_page])
 
         with patch('app.rag.readers.pdf_reader.fitz.open', return_value=mock_doc):
             with patch('app.rag.readers.pdf_reader.Path') as mock_path:

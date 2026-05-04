@@ -1,7 +1,7 @@
 import logging
 import re
 
-from rag.cleaners.text_cleaner import TextCleaner
+from .text_cleaner import TextCleaner
 
 
 class ProspectoCleaner(TextCleaner):

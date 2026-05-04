@@ -3,7 +3,7 @@ from pathlib import Path
 
 import fitz
 
-from rag.readers.document_reader import DocumentReader
+from .document_reader import DocumentReader
 
 
 class PDFReader(DocumentReader):

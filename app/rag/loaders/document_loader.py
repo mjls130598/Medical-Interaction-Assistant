@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 import logging
 from typing import List
 
-from rag.readers.document_reader import DocumentReader
+from ..readers.document_reader import DocumentReader
 from langchain_core.documents import Document
 
-from rag.cleaners.text_cleaner import TextCleaner
+from ..cleaners.text_cleaner import TextCleaner
 
 
 class DocumentLoader(ABC):
