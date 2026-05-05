@@ -53,9 +53,9 @@ class ProspectoLoader(DocumentLoader):
                 "med_name": data.get("nombre"),
                 "active_principle": ", ".join([princ.get("nombre", "") for princ in data.get("principiosActivos", [{}])]),
                 "last_updated": data.get("docs")[-1].get("fecha"),
-                "atcs": data.get("atcs", [])[0].get("nombre", ""),
+                "atcs": ", ".join([atc.get("nombre", "") for atc in data.get("atcs", [{}])]),
                 "excipients": ", ".join([exc.get("nombre", "") for exc in data.get("excipientes", [{}])]),
-                "administrations": data.get("viasAdministracion", [])[0].get("nombre", ""),
+                "administrations": ", ".join([admin.get("nombre", "") for admin in data.get("viasAdministracion", [{}])]),
                 "dosis": data.get("dosis", "")
             }
 
