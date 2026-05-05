@@ -1,0 +1,1 @@
+# Integration tests for the Medical Interaction Assistant
