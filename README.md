@@ -44,7 +44,7 @@ Getting reliable answers to these questions usually means digging through dense 
 │                                                             │
 │   ┌──────────────┐    ┌───────────────┐    ┌────────────┐   │
 │   │  PDF Loader  │───▶│  Text Chunks  │───▶│ Embeddings │   │
-│   │  (PyMuPDF)   │    │  (Splitter)   │    │ (OpenAI)   │   │
+│   │  (PyMuPDF)   │    │  (Splitter)   │    │ (GroQ)   │   │
 │   └──────────────┘    └───────────────┘    └──────┬─────┘   │
 │                                                   │         │
 │   ┌──────────────────────────────────────────┐    │         │
@@ -54,7 +54,7 @@ Getting reliable answers to these questions usually means digging through dense 
 │                       │  Similarity Search                  │
 │                       ▼                                     │
 │   ┌──────────────────────────────────────────┐              │
-│   │         LLM (GPT via LangChain)          │              │
+│   │         LLM (GroQ via LangChain)        │              │
 │   │   Prompt + retrieved context → Answer    │              │
 │   └──────────────────────────────────────────┘              │
 └─────────────────────────────────────────────────────────────┘
@@ -72,18 +72,33 @@ Getting reliable answers to these questions usually means digging through dense 
 ```
 Medical-Interaction-Assistant/
 │
+├── .github/                    # GitHub Actions CI workflows
+│   └── workflows/
 ├── app/                        # Application source code
+│   ├── config/                 # Configuration and logging helpers
+│   │   ├── __init__.py
+│   │   └── config_log.py
 │   ├── core/                   # Core application logic and prompts
 │   ├── rag/                    # RAG pipeline helpers and loaders
+│   │   ├── cleaners/
+│   │   ├── loaders/
+│   │   └── readers/
 │   ├── __init__.py
 │   └── main.py                 # FastAPI application entry point
 │
 ├── data/                       # Input data and PDF storage
+│   └── input_pdfs/
 ├── tests/                      # Pytest test suite
 │   ├── integration/            # Integration tests
-│   ├── unit/                   # Unit tests
-│   └── conftest.py             # Pytest fixtures and setup
-│
+│   │   └── data/
+│   └── unit/                   # Unit tests
+│       ├── tests_app/
+│       │   ├── tests_config/
+│       │   └── tests_rag/
+│       │       ├── tests_cleaners/
+│       │       ├── tests_loaders/
+│       │       └── tests_readers/
+│       └── __init__.py
 ├── Pipfile                     # Dependency management (pipenv)
 ├── Pipfile.lock
 ├── pytest.ini                  # Pytest configuration
@@ -96,26 +111,28 @@ Medical-Interaction-Assistant/
 ## ✅ Completed Steps
 
 - [x] **PDF ingestion** — Load and parse official AEMPS drug leaflets using PyMuPDF
-- [x] **Document chunking** — Split leaflets into semantically meaningful passages
-- [x] **Test infrastructure** — Pytest + pyfakefs for filesystem-independent unit tests
+- [x] **Text cleaning** — Implement text cleaner components for document preprocessing
+- [x] **Prospect loader** — Create a loader for pharmaceutical prospectus documents
+- [x] **PDF document reader** — Build a PDF reader for structured leaflet extraction
+- [x] **CI workflows** — Add GitHub Actions workflows for tests, linting, security scan, and coverage
 
 ---
 
 ## 🚧 Roadmap — Next Steps
 
-- [ ] **Project scaffolding** — FastAPI app structure, routing, config management
-- [ ] **Vector store setup** — ChromaDB integration with persistent storage of embeddings
-- [ ] **RAG chain** — LangChain retrieval chain connecting ChromaDB ↔ OpenAI LLM
-- [ ] **REST API layer** — FastAPI endpoints to receive queries and return answers
-- [ ] **Expand the leaflet corpus** — Automate bulk ingestion from the AEMPS public API to cover the full catalogue of authorised medications
-- [ ] **Multilingual support** — Extend queries to English (leaflets are in Spanish; add translation layer or multilingual embeddings)
-- [ ] **Source citation in responses** — Surface the exact leaflet section used to ground each answer, with drug name and section reference
-- [ ] **Drug interaction cross-queries** — Handle multi-drug questions (*"Can I take ibuprofen and omeprazole together?"*) by retrieving and combining context from multiple leaflets
-- [ ] **Conversation memory** — Add LangChain `ConversationBufferMemory` to support follow-up questions within a session
-- [ ] **Confidence scoring** — Flag responses where retrieved context similarity is below a threshold, adding a disclaimer for low-confidence answers
-- [ ] **Streamlit / web UI** — Simple frontend for non-technical users to interact with the chatbot
-- [ ] **CI/CD pipeline** — GitHub Actions workflow for automated testing on every push
-- [ ] **Docker containerisation** — `Dockerfile` + `docker-compose` for reproducible local setup and deployment
+- [ ] **Create the FastAPI application**
+- [ ] **Create a simple frontend for queries**
+- [ ] **Create the vector database**
+- [ ] **Create the RAG system for communication**
+- [ ] **Create conversation memory for responses**
+
+---
+
+## 🔮 Future Implementations
+
+- [ ] **Research document ingestion** — Add support for importing and indexing academic research papers
+- [ ] **Multi-format ingestion** — Add support for web pages, DOCX files, and other document formats
+- [ ] **Configure multi-language question handling** — Allow the system to accept and answer queries in multiple languages
 
 ---
 
@@ -125,8 +142,8 @@ Medical-Interaction-Assistant/
 |---|---|
 | Language | Python 3.11+ |
 | API Framework | FastAPI |
-| AI Orchestration | LangChain + LangChain-OpenAI |
-| LLM | OpenAI GPT (via LangChain) |
+| AI Orchestration | LangChain + GroQ |
+| LLM | GroQ (via LangChain) |
 | Vector Store | ChromaDB |
 | PDF Processing | PyMuPDF |
 | Testing | Pytest + pyfakefs |
@@ -141,7 +158,7 @@ Medical-Interaction-Assistant/
 
 - Python 3.11+
 - [Pipenv](https://pipenv.pypa.io/en/latest/)
-- An OpenAI API key
+- A GroQ API key
 
 ### Installation
 
@@ -156,8 +173,8 @@ pipenv install
 # Activate the virtual environment
 pipenv shell
 
-# Set your OpenAI API key
-export OPENAI_API_KEY=your_api_key_here
+# Set your GroQ API key
+export GROQ_API_KEY=your_api_key_here
 ```
 
 ### Run the API
