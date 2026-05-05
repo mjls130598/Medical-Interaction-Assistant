@@ -50,13 +50,15 @@ class ProspectoLoader(DocumentLoader):
             return {
                 "med_id": self.cima_id,
                 "source": f"https://cima.aemps.es/cima/dochtml/p/{self.cima_id}/",
-                "med_name": data.get("nombre"),
-                "active_principle": ", ".join([princ.get("nombre", "") for princ in data.get("principiosActivos", [{}])]),
+                "med_name": self._clean_string(data.get("nombre", "")),
+                "active_principle": self._clean_string(
+                    "| ".join([princ.get("nombre", "") for princ in data.get("principiosActivos", [{}])])),
+                "n_principles": len(data.get("principiosActivos", [])),
                 "last_updated": data.get("docs")[-1].get("fecha"),
-                "atcs": ", ".join([atc.get("nombre", "") for atc in data.get("atcs", [{}])]),
-                "excipients": ", ".join([exc.get("nombre", "") for exc in data.get("excipientes", [{}])]),
-                "administrations": ", ".join([admin.get("nombre", "") for admin in data.get("viasAdministracion", [{}])]),
-                "dosis": data.get("dosis", "")
+                "atcs": self._clean_string("| ".join([atc.get("nombre", "") for atc in data.get("atcs", [{}])])),
+                "excipients": self._clean_string("| ".join([exc.get("nombre", "") for exc in data.get("excipientes", [{}])])),
+                "administrations": self._clean_string("| ".join([admin.get("nombre", "") for admin in data.get("viasAdministracion", [{}])])),
+                "dosis": self._clean_string(data.get("dosis", "").lower())
             }
 
         except Exception as e:
@@ -76,7 +78,7 @@ class ProspectoLoader(DocumentLoader):
 
         logging.info("Creating documents with content and metadata")
 
-        sections = self.get_sections()
+        sections = self._get_sections()
 
         documents = [
             Document(

@@ -39,7 +39,7 @@ class TestDocumentLoader:
         reader.read.return_value = raw_text
         cleaner.create_sections.return_value = sections
 
-        result = loader.get_sections()
+        result = loader._get_sections()
 
         reader.read.assert_called_once_with(source)
         cleaner.create_sections.assert_called_once_with(raw_text)

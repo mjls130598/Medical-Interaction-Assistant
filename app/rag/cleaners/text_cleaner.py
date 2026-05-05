@@ -103,7 +103,8 @@ class TextCleaner(ABC):
         context = {
             "section_id": "0",
             "section_title": "Introducción",
-            "content": ""
+            "content": "",
+            "chunk_id": 0
         }
 
         for idx, text in enumerate(lines):
@@ -132,6 +133,8 @@ class TextCleaner(ABC):
                 context["section_id"] = sec_id
                 context["section_title"] = sec_title
                 context["content"] = ""
+                chunk_id = context["chunk_id"] + 1
+                context["chunk_id"] = chunk_id
                 
                 continue
 
