@@ -65,6 +65,28 @@ class ProspectoLoader(DocumentLoader):
             logging.error(f"Error fetching metadata for CIMA ID {self.cima_id}: {e}")
             raise RuntimeError(f"Error fetching metadata for CIMA ID {self.cima_id}: {e}")
         
+    def _get_context(self, med_name: str, active_principle: str,
+                     section_title: str, content: str) -> str:
+        """
+        Gets the context of the prospecto to load by creating a string with the medication name,
+        active principle, section title and content
+
+        Arguments:
+            **med_name**: Name of the medication
+            **active_principle**: Active principle of the medication
+            **section_title**: Title of the section of the prospecto
+            **content**: Content of the section of the prospecto
+
+        Returns:
+            **context**: Cleaned context of the prospecto to load
+        """
+
+        logging.info(f"Creating context for medication {med_name}, " + 
+                     f"active principle {active_principle}, section {section_title}")
+
+        return f"Este fragmento pertenece al medicamento {med_name} que contiene {active_principle}." + \
+            f"Sección: {section_title}. Contenido: \n{content}"
+        
     def create_document(self) -> List[Document]:
         """
         Creates a list of Documents with the content and metadata of the prospecto to load
@@ -82,11 +104,18 @@ class ProspectoLoader(DocumentLoader):
 
         documents = [
             Document(
-                page_content=section['content'],
+                page_content=self._get_context(
+                    med_name=metadata['med_name'],
+                    active_principle=metadata['active_principle'],
+                    section_title=section['section_title'],
+                    content=section['content']
+                ),
                 metadata={
                     **metadata,
+                    'document_id': f"ID-{metadata['med_id']}-{section['section_id']}-{section['chunk_id']}",
                     'section_id': section['section_id'],
-                    'section_title': section['section_title']
+                    'section_title': section['section_title'],
+                    'chunk_id': section['chunk_id']
                 }
             )
             for section in sections

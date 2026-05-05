@@ -22,6 +22,6 @@ if __name__ == "__main__":
 
     for i, doc in enumerate(documents): 
         print(f"--- DOCUMENTO {i} ---")
-        print(f"TÍTULO: {doc.metadata.get('section_title', 'Sin título')}")
+        print(f"METADATOS: {doc.metadata}")
         print(f"CONTENIDO:\n{doc.page_content}")
         print("-" * 30)
