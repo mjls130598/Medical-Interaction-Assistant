@@ -65,14 +65,14 @@ class TestTextCleaner:
         result = cleaner._append_to_buffer("Complete.", "Continuation")
         assert result == "Complete.\nContinuation"
 
-    def test_create_paragraphs_empty_text(self):
-        """Test create_paragraphs returns empty list for empty text."""
+    def test_create_sections_empty_text(self):
+        """Test create_sections returns empty list for empty text."""
         cleaner = MockTextCleaner()
-        result = cleaner.create_paragraphs("")
+        result = cleaner.create_sections("")
         assert result == []
 
-    def test_create_paragraphs_with_sections(self):
-        """Test create_paragraphs extracts sections correctly."""
+    def test_create_sections_with_sections(self):
+        """Test create_sections extracts sections correctly."""
         cleaner = MockTextCleaner()
         text = "1. Introduction\nThis is content.\n2. Details\nMore content."
         with patch.object(cleaner, '_extract_section') as mock_extract:
@@ -82,14 +82,14 @@ class TestTextCleaner:
                 ("2", "Details"), 
                 (None, None)
             ]
-            result = cleaner.create_paragraphs(text)
+            result = cleaner.create_sections(text)
             assert len(result) == 2
             assert result[0]['section_id'] == "1"
             assert result[0]['section_title'] == "Introduction"
             assert "This is content." in result[0]['content']
 
-    def test_create_paragraphs_skips_page_numbers(self):
-        """Test create_paragraphs skips lines that are page numbers."""
+    def test_create_sections_skips_page_numbers(self):
+        """Test create_sections skips lines that are page numbers."""
         cleaner = MockTextCleaner()
         text = "1 de 10\nContent"
         with patch.object(cleaner, '_is_page_number') as mock_is_page, \
@@ -97,7 +97,7 @@ class TestTextCleaner:
             mock_is_page.side_effect = [True, False]
             mock_extract.return_value = (None, None)
             
-            result = cleaner.create_paragraphs(text)
+            result = cleaner.create_sections(text)
             mock_is_page.assert_called()
             # Depending on implementation, but since first line skipped, and no section, buffer empty, but last line adds if idx==len-1
             # Wait, for idx=0, text="1 de 10", is_page=True, continue

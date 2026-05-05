@@ -37,10 +37,10 @@ class TestDocumentLoader:
         sections = [{"content": "cleaned", "section_id": "1", "section_title": "Title"}]
 
         reader.read.return_value = raw_text
-        cleaner.create_paragraphs.return_value = sections
+        cleaner.create_sections.return_value = sections
 
         result = loader.get_sections()
 
         reader.read.assert_called_once_with(source)
-        cleaner.create_paragraphs.assert_called_once_with(raw_text)
+        cleaner.create_sections.assert_called_once_with(raw_text)
         assert result == sections

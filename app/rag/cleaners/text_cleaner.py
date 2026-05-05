@@ -80,24 +80,24 @@ class TextCleaner(ABC):
         else:
             return buffer_text + f"\n{new_text}"
 
-    def create_paragraphs(self, text: str) -> List[dict]:
+    def create_sections(self, text: str) -> List[dict]:
         """
-        Create cleaned paragraphs from fit text blocks.
+        Create cleaned sections from fit text blocks.
 
         Arguments:
             **text**: Text extracted from the document as string
 
         Returns:
-            **paragraphs**: List of paragraphs with content, 
-                            section id and section title
+            **sections**: List of sections with content, 
+                          section id and section title
         """
 
         if not text or text == "":
-            logging.warning("Empty text received, returning empty paragraphs list")
+            logging.warning("Empty text received, returning empty sections list")
             return []
 
         lines = text.splitlines()
-        paragraphs = []
+        sections = []
 
         # Initialize context for section tracking
         context = {
@@ -125,8 +125,8 @@ class TextCleaner(ABC):
                 # If we have a section in the buffer, we need to save it before updating the context
                 if context["content"]:
                     context["content"] = self._clean_line(context["content"])
-                    paragraphs.append(context.copy())
-                    logging.info("Content added as a new paragraph")
+                    sections.append(context.copy())
+                    logging.info("Content added as a new section")
 
                 # Update context with the new section
                 context["section_id"] = sec_id
@@ -145,7 +145,7 @@ class TextCleaner(ABC):
                 "finding a new section, adding remaining " \
                 "buffer text to the last section")
                 context["content"] = self._clean_line(context["content"])
-                paragraphs.append(context.copy())
+                sections.append(context.copy())
                 continue
 
-        return paragraphs
+        return sections

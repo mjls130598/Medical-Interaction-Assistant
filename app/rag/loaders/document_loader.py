@@ -57,6 +57,6 @@ class DocumentLoader(ABC):
         raw_text = self.reader.read(self.source)
 
         logging.info("Creating sections from the document")
-        sections = self.cleaner.create_paragraphs(raw_text)
+        sections = self.cleaner.create_sections(raw_text)
         
         return sections
