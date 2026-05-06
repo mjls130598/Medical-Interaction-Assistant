@@ -3,6 +3,8 @@ import logging
 import re
 from typing import List
 
+from .chunking_strategy.content_chunker import ContentChunker
+
 
 class TextCleaner(ABC):
 
@@ -63,7 +65,9 @@ class TextCleaner(ABC):
     
     def _append_to_buffer(self, buffer_text: str, new_text: str) -> str:
         """
-        Append new text to the buffer text, adding a space if the buffer text doesn't end with a punctuation mark and the new text doesn't start with a capital letter.
+        Append new text to the buffer text, adding a space if the buffer 
+        text doesn't end with a punctuation mark and the new text doesn't 
+        start with a capital letter.
 
         Arguments:
             **buffer_text**: Text buffer to append the new text to
@@ -95,6 +99,8 @@ class TextCleaner(ABC):
         if not text or text == "":
             logging.warning("Empty text received, returning empty sections list")
             return []
+        
+        chunker = ContentChunker()
 
         lines = text.splitlines()
         sections = []
@@ -103,9 +109,31 @@ class TextCleaner(ABC):
         context = {
             "section_id": "0",
             "section_title": "Introducción",
-            "content": "",
-            "chunk_id": 0
+            "content": ""
         }
+
+        def process_and_append(ctx: dict):
+
+            logging.info("Save section")
+
+            if not ctx['content']: return
+
+            logging.info("Cleaning text")
+            cleaned = self._clean_line(ctx["content"])
+
+            logging.info("Spliting text")
+            fragments = chunker.split(cleaned)
+
+            logging.info("Creating section for each split")
+            for i, fragment in enumerate(fragments):
+                new_sec = ctx.copy()
+                new_sec['content'] = fragment
+
+                if len(fragments) > 1:
+                    new_sec["chunk_id"] = f"{ctx['section_id']}_p{i}"
+
+                sections.append(new_sec)
+
 
         for idx, text in enumerate(lines):
             
@@ -122,33 +150,22 @@ class TextCleaner(ABC):
 
             if sec_id: 
                 logging.info(f"Section found: {sec_id} - {sec_title}")
+                process_and_append(context)
 
-                # If we have a section in the buffer, we need to save it before updating the context
-                if context["content"]:
-                    context["content"] = self._clean_line(context["content"])
-                    sections.append(context.copy())
-                    logging.info("Content added as a new section")
-
-                # Update context with the new section
-                context["section_id"] = sec_id
-                context["section_title"] = sec_title
-                context["content"] = ""
-                chunk_id = context["chunk_id"] + 1
-                context["chunk_id"] = chunk_id
+                logging.info("Updating context dict")
+                context.update(
+                    {
+                        "section_id": sec_id,
+                        "section_title": sec_title,
+                        "content": ""
+                    }
+                )
                 
                 continue
 
             logging.info("Appending line to buffer")
             context["content"] = self._append_to_buffer(context["content"], text)
 
-            # If we are at the last line, we need to concatenate
-            # the buffer text with the current line 
-            if idx == len(lines) - 1:
-                logging.info("Last line reached without " \
-                "finding a new section, adding remaining " \
-                "buffer text to the last section")
-                context["content"] = self._clean_line(context["content"])
-                sections.append(context.copy())
-                continue
+        process_and_append(context)
 
         return sections
