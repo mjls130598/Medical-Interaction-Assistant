@@ -112,10 +112,10 @@ class ProspectoLoader(DocumentLoader):
                 ),
                 metadata={
                     **metadata,
-                    'document_id': f"ID-{metadata['med_id']}-{section['section_id']}-{section['chunk_id']}",
+                    'document_id': f"ID-{metadata['med_id']}-{section['section_id']}-{section['chunk_id']}" \
+                                    if 'chunk_id' in section else f"ID-{metadata['med_id']}-{section['section_id']}",
                     'section_id': section['section_id'],
-                    'section_title': section['section_title'],
-                    'chunk_id': section['chunk_id']
+                    'section_title': section['section_title']
                 }
             )
             for section in sections
