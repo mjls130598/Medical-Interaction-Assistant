@@ -6,14 +6,14 @@ from .groq_strategy import GroqStrategy
 
 
 class ContentChunker:
-    def __init__(self, strategy: ChunkingStrategy = GroqStrategy(),
+    def __init__(self, strategy: ChunkingStrategy,
                  max_unit: int = 512, overlap_percentage: float = 0.2):
         
         """
         Initialize the ContentChunker with the given strategy, maximum unit size, and overlap percentage.
 
         Arguments:
-            **strategy**: Chunking strategy to use (default: GroqStrategy())
+            **strategy**: Chunking strategy to use
             **max_unit**: Maximum number of tokens for each chunk (default: 512)
             **overlap_percentage**: Percentage of overlap between chunks (default: 0.2)
         """

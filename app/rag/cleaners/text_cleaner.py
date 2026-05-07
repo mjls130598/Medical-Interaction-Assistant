@@ -3,6 +3,7 @@ import logging
 import re
 from typing import List
 
+from .chunking_strategy.groq_strategy import GroqStrategy
 from .chunking_strategy.content_chunker import ContentChunker
 
 
@@ -100,7 +101,8 @@ class TextCleaner(ABC):
             logging.warning("Empty text received, returning empty sections list")
             return []
         
-        chunker = ContentChunker()
+        strategy = GroqStrategy()
+        chunker = ContentChunker(strategy=strategy)
 
         lines = text.splitlines()
         sections = []

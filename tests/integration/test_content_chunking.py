@@ -9,12 +9,12 @@ class TestContentChunking:
     @pytest.fixture
     def chunker(self):
         """Fixture providing a ContentChunker instance with default GroqStrategy."""
-        return ContentChunker()
+        return ContentChunker(strategy=GroqStrategy())
 
     @pytest.fixture
     def chunker_with_custom_params(self):
         """Fixture providing a ContentChunker with custom max_unit and overlap."""
-        return ContentChunker(max_unit=256, overlap_percentage=0.25)
+        return ContentChunker(strategy=GroqStrategy(), max_unit=256, overlap_percentage=0.25)
 
     def test_successful_text_splitting(self, chunker):
         """Test successful splitting of large text into chunks."""
