@@ -113,6 +113,13 @@ class TextCleaner(ABC):
         }
 
         def process_and_append(ctx: dict):
+            """
+            Process the current context by cleaning and splitting the content,
+            and appending the resulting sections to the sections list.
+            
+            Arguments:
+                **ctx**: Context dictionary containing section_id, section_title and content
+            """
 
             logging.info("Save section")
 

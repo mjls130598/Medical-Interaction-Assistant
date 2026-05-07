@@ -9,6 +9,15 @@ class ContentChunker:
     def __init__(self, strategy: ChunkingStrategy = GroqStrategy(),
                  max_unit: int = 512, overlap_percentage: float = 0.2):
         
+        """
+        Initialize the ContentChunker with the given strategy, maximum unit size, and overlap percentage.
+
+        Arguments:
+            **strategy**: Chunking strategy to use (default: GroqStrategy())
+            **max_unit**: Maximum number of tokens for each chunk (default: 512)
+            **overlap_percentage**: Percentage of overlap between chunks (default: 0.2)
+        """
+        
         logging.info("Configure content chunker")
         
         self.strategy = strategy
@@ -16,6 +25,14 @@ class ContentChunker:
         self.overlap_unit = int(max_unit * overlap_percentage)
 
     def split (self, text: str) -> List[str]:
+        """
+        Split the given text into smaller chunks based on the configured strategy, maximum unit size, and overlap percentage.
+
+        Arguments:
+            **text**: Text to split
+        Returns:
+            List of chunks resulting from splitting the text
+        """
         
         logging.info("Split the given text")
         
