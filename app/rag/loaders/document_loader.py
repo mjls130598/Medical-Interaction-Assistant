@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
 from typing import List
+import unicodedata
 
 from ..readers.document_reader import DocumentReader
 from langchain_core.documents import Document
@@ -44,8 +45,38 @@ class DocumentLoader(ABC):
         """
         
         pass
+
+    def _clean_string(self, buffer_text: str) -> str:
+        """
+        Clean the provided text by stripping leading and trailing whitespace, 
+        converting it to lowercase and removing accents and diacritics from characters.
+
+        Arguments:
+            **buffer_text**: Text to clean
+
+        Returns:
+            **cleaned_text**: Cleaned text
+        """
+
+        logging.info(f"Cleaning string: {buffer_text}")
+        
+        lower_text = buffer_text.lower()
+        cleaned_text = lower_text.strip()
+
+        # Normalize the text to decompose characters with diacritics 
+        # into their base characters and diacritical marks
+        descompose_text = unicodedata.normalize('NFD', cleaned_text)
     
-    def get_sections(self) -> List[dict]:
+        # Filter and reconstruct the string ignoring the diacritical marks
+        # 'Mn' means 'Mark, Nonspacing'
+        no_accent_text = "".join(
+            char for char in descompose_text 
+            if unicodedata.category(char) != 'Mn'
+        )
+
+        return no_accent_text
+    
+    def _get_sections(self) -> List[dict]:
 
         """
         Gets the sections of the document to load by reading the document and creating sections with the cleaner

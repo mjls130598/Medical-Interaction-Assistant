@@ -3,7 +3,7 @@
 > **AI-powered chatbot for drug interaction and medication queries, grounded in official AEMPS pharmaceutical leaflets.**
 
 ![Status](https://img.shields.io/badge/status-in%20progress-yellow?style=flat-square)
-![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python)
+![Python](https://img.shields.io/badge/Python-3.12+-blue?style=flat-square&logo=python)
 ![LangChain](https://img.shields.io/badge/LangChain-RAG-green?style=flat-square)
 ![FastAPI](https://img.shields.io/badge/FastAPI-REST-teal?style=flat-square&logo=fastapi)
 ![License](https://img.shields.io/badge/license-GPL--3.0-orange?style=flat-square)
