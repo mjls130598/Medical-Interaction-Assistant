@@ -46,16 +46,6 @@ class DocumentLoader(ABC):
         
         pass
 
-    @abstractmethod
-    def _get_context(self) -> str:
-        """
-        Gets the context of the document to load by reading the document and cleaning the extracted text
-
-        Returns:
-            **context**: Cleaned context of the document to load
-        """
-        pass
-
     def _clean_string(self, buffer_text: str) -> str:
         """
         Clean the provided text by stripping leading and trailing whitespace, 
