@@ -19,16 +19,16 @@ def make_mock_document(document_id: str, content: str, embedding: list[float]) -
 class TestVectorStoreManager:
 
     @patch("app.service.vector_store.vectore_store_manager.chromadb.PersistentClient")
-    def test_init_creates_client_and_collection(self, mock_persistent_client):
+    def test_init_creates_client_and_collection(self, mock_persistent_client, tmp_path):
         """Test that constructor initializes chromadb client and collection."""
         client_instance = MagicMock()
         collection_instance = MagicMock()
         client_instance.get_or_create_collection.return_value = collection_instance
         mock_persistent_client.return_value = client_instance
 
-        manager = VectorStoreManager(path="/tmp/store", collection_name="test_collection")
+        manager = VectorStoreManager(path=tmp_path / "store", collection_name="test_collection")
 
-        mock_persistent_client.assert_called_once_with(path="/tmp/store")
+        mock_persistent_client.assert_called_once_with(path=tmp_path / "store")
         client_instance.get_or_create_collection.assert_called_once_with(name="test_collection")
         assert manager.client is client_instance
         assert manager.collection is collection_instance
