@@ -84,8 +84,11 @@ class ProspectoLoader(DocumentLoader):
         logging.info(f"Creating context for medication {med_name}, " + 
                      f"active principle {active_principle}, section {section_title}")
 
-        return f"Este fragmento pertenece al medicamento {med_name} que contiene {active_principle}." + \
-            f"Sección: {section_title}. Contenido: \n{content}"
+        return (
+            f"DATOS DEL MEDICAMENTO: {med_name} ({active_principle})\n"
+            f"SECCIÓN DEL PROSPECTO: {section_title}\n"
+            f"CONTENIDO:\n{content}"
+        )
         
     def create_document(self) -> List[Document]:
         """
