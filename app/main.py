@@ -1,4 +1,6 @@
 from config.config_log import setup_logging
+from rag.embedding.document_embedder import DocumentEmbedder
+from rag.embedding.embedding_strategy.sentence_transformer_strategy import SentenceTransformerStrategy
 
 
 if __name__ == "__main__":
@@ -18,9 +20,13 @@ if __name__ == "__main__":
 
     documents = prospecto_loader.create_document()
 
-    print(len(documents))
+    strategy = SentenceTransformerStrategy(model_name="all-MiniLM-L6-v2")
+    embedder = DocumentEmbedder(strategy=strategy)
+    final_documents = embedder.generate_embeddings(documents)
 
-    for i, doc in enumerate(documents): 
+    print(len(final_documents))
+
+    for i, doc in enumerate(final_documents): 
         print(f"--- DOCUMENTO {i} ---")
         print(f"METADATOS: {doc.metadata}")
         print(f"CONTENIDO:\n{doc.page_content}")
