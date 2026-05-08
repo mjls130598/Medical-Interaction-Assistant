@@ -32,3 +32,21 @@ class VectorStoreManager:
             metadatas=[doc.metadata for doc in documents],
             documents=[doc.page_content for doc in documents]
         )
+
+    def search_relevant_chunks(self, query_embedding: List[float], n_results: int = 5) -> List[str]:
+        """
+        Search for the most relevant document chunks based on a query embedding.
+
+        Arguments:
+            query_embedding (List[float]): The embedding vector of the query.
+            n_results (int): The number of top relevant results to return.
+        
+        Returns:
+            List[str]: A list of the most relevant document contents.
+        """
+        results = self.collection.query(
+            query_embeddings=[query_embedding],
+            n_results=n_results
+        )
+        
+        return results

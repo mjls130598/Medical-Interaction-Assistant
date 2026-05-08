@@ -1,16 +1,21 @@
+import os
+from dotenv import load_dotenv
+
 from config.config_log import setup_logging
+from rag.loaders.prospecto_loader import ProspectoLoader
+from rag.cleaners.prospecto_cleaner import ProspectoCleaner
+from rag.readers.pdf_reader import PDFReader
 from rag.embedding.document_embedder import DocumentEmbedder
 from rag.embedding.embedding_strategy.sentence_transformer_strategy import SentenceTransformerStrategy
+from service.assistance.groq_rag_assistance import GroqRAGAssistance
+from service.vector_store.vectore_store_manager import VectorStoreManager
 
 
 if __name__ == "__main__":
     setup_logging()
     
-    from rag.loaders.prospecto_loader import ProspectoLoader
-    from rag.cleaners.prospecto_cleaner import ProspectoCleaner
-    from rag.readers.pdf_reader import PDFReader
-    
     pdf_example = "data/input_pdfs/acetilcisteina.pdf"
+    load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
     # Example usage
     prospecto_cleaner = ProspectoCleaner()
@@ -21,13 +26,13 @@ if __name__ == "__main__":
     documents = prospecto_loader.create_document()
 
     strategy = SentenceTransformerStrategy(model_name="all-MiniLM-L6-v2")
-    embedder = DocumentEmbedder(strategy=strategy)
-    final_documents = embedder.generate_embeddings(documents)
+    document_embedder = DocumentEmbedder(embedding_strategy=strategy)
+    final_documents = document_embedder.embed_documents(documents)
 
-    print(len(final_documents))
+    vector_store_manager = VectorStoreManager()
+    vector_store_manager.save_documents(final_documents)
 
-    for i, doc in enumerate(final_documents): 
-        print(f"--- DOCUMENTO {i} ---")
-        print(f"METADATOS: {doc.metadata}")
-        print(f"CONTENIDO:\n{doc.page_content}")
-        print("-" * 30)
+    assistent = GroqRAGAssistance(vector_store=vector_store_manager, embedding_strategy=strategy)
+    response = assistent.ask("¿Cuáles son las indicaciones de este medicamento?")
+    print("Respuesta del asistente:")
+    print(response)
