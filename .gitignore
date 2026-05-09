@@ -5,3 +5,4 @@ __pycache__
 data/input_pdfs
 Pipfile.lock
 app.log
+vector_store/

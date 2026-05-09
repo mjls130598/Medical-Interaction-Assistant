@@ -8,18 +8,9 @@ from app.rag.cleaners.prospecto_cleaner import ProspectoCleaner
 class TestProspectoLoading:
     """Integration tests for the prospecto loading functionality."""
 
-    @pytest.fixture
-    def sample_pdf_path(self):
-        """Fixture providing the path to a sample PDF for testing."""
-        return "tests/integration/data/test_prospecto.pdf"
-
-    def test_successful_prospecto_loading(self, sample_pdf_path):
+    def test_successful_prospecto_loading(self, prospecto_loader):
         """Test successful loading of a prospecto with valid PDF and CIMA ID."""
-        reader = PDFReader()
-        cleaner = ProspectoCleaner()
-        loader = ProspectoLoader(reader=reader, cleaner=cleaner, source=sample_pdf_path, cima_id="67763")
-
-        documents = loader.create_document()
+        documents = prospecto_loader.create_document()
 
         assert len(documents) > 0
         assert all('med_id' in doc.metadata for doc in documents)

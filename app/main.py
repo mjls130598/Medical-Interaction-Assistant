@@ -26,13 +26,13 @@ if __name__ == "__main__":
     documents = prospecto_loader.create_document()
 
     strategy = SentenceTransformerStrategy(model_name="all-MiniLM-L6-v2")
-    document_embedder = DocumentEmbedder(embedding_strategy=strategy)
-    final_documents = document_embedder.embed_documents(documents)
+    document_embedder = DocumentEmbedder(strategy=strategy)
+    final_documents = document_embedder.generate_embeddings(documents)
 
     vector_store_manager = VectorStoreManager()
     vector_store_manager.save_documents(final_documents)
 
     assistent = GroqRAGAssistance(vector_store=vector_store_manager, embedding_strategy=strategy)
-    response = assistent.ask("¿Cuáles son las indicaciones de este medicamento?")
+    response = assistent.ask("¿Cuáles son las indicaciones de la acetilcisteina?")
     print("Respuesta del asistente:")
     print(response)

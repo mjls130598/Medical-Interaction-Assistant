@@ -31,5 +31,7 @@ jobs:
         pipenv run pytest tests/unit/
 
     - name: Ejecutar pruebas de integración
+      env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       run: |
         pipenv run pytest tests/integration/
