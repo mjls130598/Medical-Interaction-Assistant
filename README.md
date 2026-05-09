@@ -81,8 +81,10 @@ Medical-Interaction-Assistant/
 │   ├── core/                   # Core application logic and prompts
 │   ├── rag/                    # RAG pipeline helpers and loaders
 │   │   ├── cleaners/
+│   │   ├── embedding/
 │   │   ├── loaders/
 │   │   └── readers/
+│   ├── service/                # App service layer and orchestration
 │   ├── __init__.py
 │   └── main.py                 # FastAPI application entry point
 │
@@ -114,6 +116,9 @@ Medical-Interaction-Assistant/
 - [x] **Text cleaning** — Implement text cleaner components for document preprocessing
 - [x] **Prospect loader** — Create a loader for pharmaceutical prospectus documents
 - [x] **PDF document reader** — Build a PDF reader for structured leaflet extraction
+- [x] **Vector database** — Create and configure a vector database for retrieval
+- [x] **RAG system** — Build the retrieval-augmented generation communication system
+- [x] **Source citation** — Insert consulted sources into each response
 - [x] **CI workflows** — Add GitHub Actions workflows for tests, linting, security scan, and coverage
 
 ---
@@ -122,8 +127,6 @@ Medical-Interaction-Assistant/
 
 - [ ] **Create the FastAPI application**
 - [ ] **Create a simple frontend for queries**
-- [ ] **Create the vector database**
-- [ ] **Create the RAG system for communication**
 - [ ] **Create conversation memory for responses**
 
 ---
