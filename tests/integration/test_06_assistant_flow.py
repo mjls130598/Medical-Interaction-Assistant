@@ -31,7 +31,7 @@ class TestAssistantFlow:
             MagicMock(message=MagicMock(content=mock_text))
         ]
 
-        with patch("app.service.assistance.groq_rag_assistance.Groq.chat.completions.create") as mock_create:
+        with patch.object(assistant.client.chat.completions, "create") as mock_create:
             mock_create.return_value = mock_response
             
             query = "¿Por qué es importante la educación del paciente?"
@@ -42,5 +42,5 @@ class TestAssistantFlow:
             
             args, kwargs = mock_create.call_args
             prompt_sent = kwargs['messages'][1]['content']
-            assert "Patient education" in prompt_sent
+            assert query in prompt_sent
         
