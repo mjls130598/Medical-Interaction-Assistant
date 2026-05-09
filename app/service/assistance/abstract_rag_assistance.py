@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
 
-from rag.embedding.embedding_strategy.embedding_strategy import EmbeddingStrategy
+from app.rag.embedding.embedding_strategy.embedding_strategy import EmbeddingStrategy
 from ..vector_store.vectore_store_manager import VectorStoreManager
 
 

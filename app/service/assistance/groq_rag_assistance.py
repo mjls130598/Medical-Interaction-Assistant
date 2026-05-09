@@ -3,7 +3,7 @@ import os
 
 from groq import Groq
 
-from rag.embedding.embedding_strategy.embedding_strategy import EmbeddingStrategy
+from app.rag.embedding.embedding_strategy.embedding_strategy import EmbeddingStrategy
 from .abstract_rag_assistance import AbstractRAGAssistance
 from ..vector_store.vectore_store_manager import VectorStoreManager
 
