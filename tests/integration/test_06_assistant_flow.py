@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from service.assistance.groq_rag_assistance import GroqRAGAssistance
+from app.service.assistance.groq_rag_assistance import GroqRAGAssistance
 
 
 class TestAssistantFlow:

@@ -10,33 +10,6 @@ from app.service.vector_store.vectore_store_manager import VectorStoreManager
 class TestEmbeddingAndVectorStore:
     """Integration tests for embedding generation and vector store persistence."""
 
-    @pytest.fixture
-    def embedding_strategy(self):
-        """Fixture providing the sentence transformer embedding strategy."""
-        return SentenceTransformerStrategy(model_name="all-MiniLM-L6-v2")
-
-    @pytest.fixture
-    def embedder(self, embedding_strategy):
-        """Fixture providing a DocumentEmbedder configured with strategy."""
-        return DocumentEmbedder(strategy=embedding_strategy)
-
-    @pytest.fixture
-    def sample_documents(self):
-        """Fixture providing a small batch of documents for embedding and storage."""
-        texts = [
-            "Patient education is essential for successful treatment.",
-            "Medication must be administered under medical supervision.",
-            "Follow-up care includes monitoring and reporting side effects."
-        ]
-        return [Document(page_content=text, metadata={"document_id": f"doc_{index}"})
-                for index, text in enumerate(texts)]
-
-    @pytest.fixture
-    def vector_store(self, tmp_path):
-        """Fixture providing a VectorStoreManager backed by a temporary directory."""
-        storage_dir = tmp_path / "vector_store"
-        return VectorStoreManager(path=str(storage_dir), collection_name="prospectos_integration")
-
     def test_generate_embeddings_for_documents(self, embedder, sample_documents):
         """Test full embedding generation for a real batch of documents."""
         embedded_documents = embedder.generate_embeddings(sample_documents)
@@ -49,9 +22,8 @@ class TestEmbeddingAndVectorStore:
             assert isinstance(document.metadata["embedding"][0], float)
             assert document.metadata["document_id"].startswith("doc_")
 
-    def test_save_documents_to_vector_store(self, embedder, sample_documents, tmp_path):
+    def test_save_documents_to_vector_store(self, embedder, sample_documents, vector_store):
         """Test saving embedded documents to a persistent Chroma vector store."""
-        vector_store = VectorStoreManager(path=str(tmp_path / "vector_store"), collection_name="prospectos_integration")
         embedded_documents = embedder.generate_embeddings(sample_documents)
 
         vector_store.save_documents(embedded_documents)
