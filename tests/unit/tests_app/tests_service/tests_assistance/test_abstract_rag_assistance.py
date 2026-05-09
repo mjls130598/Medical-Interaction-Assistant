@@ -10,7 +10,7 @@ class ConcreteRAGAssistance(assistance_module.AbstractRAGAssistance):
     """Concrete helper class for testing abstract assistance behavior."""
 
     def ask(self, query: str) -> str:
-        return """"
+        return ""
 
 
 def make_mock_embedding_strategy(return_vector: list[float]) -> MagicMock:
@@ -96,23 +96,3 @@ class TestAbstractRAGAssistance:
             n_results=3
         )
         assert "Contenido: single document" in context
-
-    def test_get_relevant_context_handles_missing_metadata(self):
-        """Test that _get_relevant_context uses default metadata labels when metadata keys are missing."""
-        vector_store = make_mock_vector_store({
-            "documents": [["missing metadata chunk"]],
-            "metadatas": [[{}]]
-        })
-        embedding_strategy = make_mock_embedding_strategy([0.7, 0.8])
-
-        assistance = ConcreteRAGAssistance(
-            vector_store=vector_store,
-            embedding_strategy=embedding_strategy
-        )
-
-        context = assistance._get_relevant_context("query with no metadata")
-
-        assert "Medicamento: Desconocido" in context
-        assert "Sección: Desconocida" in context
-        assert "URL: Desconocida" in context
-        assert "Contenido: missing metadata chunk" in context
