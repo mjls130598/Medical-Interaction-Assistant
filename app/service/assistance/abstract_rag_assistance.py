@@ -17,6 +17,25 @@ class AbstractRAGAssistance(ABC):
         self.vector_store = vector_store
         self.embedding_strategy = embedding_strategy
 
+        self.system_prompt = (            
+            "Eres un asistente virtual sanitario estrictamente informativo. \n"
+            "1. Analiza el contexto. 2. Identifica la respuesta. 3. Si no hay evidencia textual directa, declara ignorancia.\n"
+            "NUNCA recomiendes cambiar un tratamiento médico.\n"
+            "Siempre añade la cláusula: 'Esta información no sustituye el consejo médico profesional'.\n"
+            "Si el usuario pregunta por un medicamento específico, responde solo si el texto lo menciona explícitamente.\n"
+            "Si la respuesta no está en el contexto, usa exactamente esta frase: 'Lo siento, el prospecto proporcionado "
+            "no contiene información sobre [tema]'.\n" 
+            "REGLAS CRÍTICAS:\n"
+            "1. CITAS: Cada vez que afirmes algo basado en el contexto, añade el número de fuente al final de la frase,"
+            " por ejemplo: 'La dosis recomendada es de 500mg [1]'.\n"
+            "2. BIBLIOGRAFÍA: Al final de tu respuesta, crea una sección llamada 'Fuentes consultadas'"
+            " donde listes el nombre del medicamento, la sección y el enlace (URL) de cada fuente utilizada "
+            "(separado entre viñetas cada fuente).\n Ejemplo:\n"
+            "Fuentes consultadas:\n"
+            "[1] Paracetamol (Prospecto) - Sección: Indicaciones. URL: https://cima.aemps.es/...\n"
+            "[2] Paracetamol (Prospecto) - Sección: Posología." 
+        )
+
     @abstractmethod
     def ask(self, query: str) -> str:
         """
@@ -38,4 +57,16 @@ class AbstractRAGAssistance(ABC):
             n_results=n_results
         )
 
-        return "\n\n".join(results['documents'][0])
+        formatted_context = []
+
+        for i, (doc_text, metadata) in enumerate(zip(results['documents'][0], results['metadatas'][0])):
+            chunk_info = (
+                f"-- FUENTE [{i+1}] --\n"
+                f"Medicamento: {metadata.get('med_name', 'Desconocido')}\n"
+                f"Sección: {metadata.get('section_title', 'Desconocida')}\n"
+                f"URL: {metadata.get('source', 'Desconocida')}\n"
+                f"Contenido: {doc_text}\n"
+            )
+            formatted_context.append(chunk_info)
+
+        return "\n\n".join(formatted_context)

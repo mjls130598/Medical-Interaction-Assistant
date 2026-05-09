@@ -74,3 +74,41 @@ class TestVectorStoreManager:
             metadatas=[],
             documents=[],
         )
+
+    @patch("app.service.vector_store.vectore_store_manager.chromadb.PersistentClient")
+    def test_search_relevant_chunks_queries_collection(self, mock_persistent_client):
+        """Test search_relevant_chunks calls collection.query and returns the results."""
+        client_instance = MagicMock()
+        collection_instance = MagicMock()
+        collection_instance.query.return_value = ["result1", "result2"]
+        client_instance.get_or_create_collection.return_value = collection_instance
+        mock_persistent_client.return_value = client_instance
+
+        manager = VectorStoreManager()
+
+        output = manager.search_relevant_chunks([0.5, 0.6], n_results=3)
+
+        collection_instance.query.assert_called_once_with(
+            query_embeddings=[[0.5, 0.6]],
+            n_results=3,
+        )
+        assert output == ["result1", "result2"]
+
+    @patch("app.service.vector_store.vectore_store_manager.chromadb.PersistentClient")
+    def test_search_relevant_chunks_default_n_results(self, mock_persistent_client):
+        """Test search_relevant_chunks uses the default n_results parameter when not specified."""
+        client_instance = MagicMock()
+        collection_instance = MagicMock()
+        collection_instance.query.return_value = ["default_result"]
+        client_instance.get_or_create_collection.return_value = collection_instance
+        mock_persistent_client.return_value = client_instance
+
+        manager = VectorStoreManager()
+
+        output = manager.search_relevant_chunks([1.0, 2.0])
+
+        collection_instance.query.assert_called_once_with(
+            query_embeddings=[[1.0, 2.0]],
+            n_results=5,
+        )
+        assert output == ["default_result"]

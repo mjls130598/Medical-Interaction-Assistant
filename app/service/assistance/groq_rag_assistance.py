@@ -25,15 +25,6 @@ class GroqRAGAssistance(AbstractRAGAssistance):
         self.client = Groq(api_key = os.getenv("GROQ_API_KEY"))
         self.model = model
         
-        self.system_prompt = (            
-            "Eres un asistente virtual sanitario estrictamente informativo. "
-            "1. Analiza el contexto. 2. Identifica la respuesta. 3. Si no hay evidencia textual directa, declara ignorancia."
-            "NUNCA recomiendes cambiar un tratamiento médico."
-            "Siempre añade la cláusula: 'Esta información no sustituye el consejo médico profesional'."
-            "Si el usuario pregunta por un medicamento específico, responde solo si el texto lo menciona explícitamente. "
-            "Si la respuesta no está en el contexto, usa exactamente esta frase: 'Lo siento, el prospecto proporcionado no contiene información sobre [tema]'."
-        )
-        
     def ask(self, query: str) -> str:
         """
         Process a user query and return an answer based on the RAG approach using Groq for generation.
