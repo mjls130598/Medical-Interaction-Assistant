@@ -54,7 +54,7 @@ Getting reliable answers to these questions usually means digging through dense 
 │                       │  Similarity Search                  │
 │                       ▼                                     │
 │   ┌──────────────────────────────────────────┐              │
-│   │         LLM (GroQ via LangChain)        │              │
+│   │         LLM (GroQ via LangChain)         │              │
 │   │   Prompt + retrieved context → Answer    │              │
 │   └──────────────────────────────────────────┘              │
 └─────────────────────────────────────────────────────────────┘
@@ -96,10 +96,13 @@ Medical-Interaction-Assistant/
 │   └── unit/                   # Unit tests
 │       ├── tests_app/
 │       │   ├── tests_config/
-│       │   └── tests_rag/
-│       │       ├── tests_cleaners/
-│       │       ├── tests_loaders/
-│       │       └── tests_readers/
+│       │   ├── tests_rag/
+│       │   │   ├── tests_cleaners/
+│       │   │   ├── tests_loaders/
+│       │   │   └── tests_readers/
+│       │   └── tests_service/
+│       │       ├── tests_vector_store/
+│       │       ├── tests_assistance/
 │       └── __init__.py
 ├── Pipfile                     # Dependency management (pipenv)
 ├── Pipfile.lock
