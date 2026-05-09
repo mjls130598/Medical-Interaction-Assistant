@@ -71,7 +71,7 @@ class TestAbstractRAGAssistance:
             "Medicamento: Ibuprofeno\n"
             "Sección: Posología\n"
             "URL: https://example.com/2\n"
-            "Contenido: doc B\n"
+            "Contenido: doc B"
         )
 
         assert context == expected_context

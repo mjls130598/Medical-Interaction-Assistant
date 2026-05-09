@@ -65,7 +65,7 @@ class AbstractRAGAssistance(ABC):
                 f"Medicamento: {metadata.get('med_name', 'Desconocido')}\n"
                 f"Sección: {metadata.get('section_title', 'Desconocida')}\n"
                 f"URL: {metadata.get('source', 'Desconocida')}\n"
-                f"Contenido: {doc_text}\n"
+                f"Contenido: {doc_text}"
             )
             formatted_context.append(chunk_info)
 
