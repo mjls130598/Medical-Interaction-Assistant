@@ -40,6 +40,7 @@ if __name__ == "__main__":
     history_service = HistoryService(history_repository=history_repository)
 
     assistent = GroqRAGAssistance(vector_store=vector_store_manager, embedding_strategy=strategy, db_connection=history_service)
-    response = assistent.ask("¿Cuáles son las indicaciones de la acetilcisteina?")
+    session_id = "test_session_123"
+    response = assistent.ask("¿Cuáles son las indicaciones de la acetilcisteina?", session_id)
     print("Respuesta del asistente:")
     print(response)

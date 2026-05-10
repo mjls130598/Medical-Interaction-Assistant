@@ -20,6 +20,8 @@ class TestAssistantFlow:
 
     def test_ask_flow_integration(self, assistant, embedder, sample_documents):
         """Check the complete flow: context retrieval and LLM response."""
+
+        session_id = "test_session_123"
         
         embedded_docs = embedder.generate_embeddings(sample_documents)
         assistant.vector_store.save_documents(embedded_docs)
@@ -30,14 +32,19 @@ class TestAssistantFlow:
         mock_response.choices = [
             MagicMock(message=MagicMock(content=mock_text))
         ]
+        mock_response.created = 123456789 
 
         with patch.object(assistant.client.chat.completions, "create") as mock_create:
             mock_create.return_value = mock_response
             
             query = "¿Por qué es importante la educación del paciente?"
-            response = assistant.ask(query)
+            response = assistant.ask(query, session_id)
 
-            assert response == mock_text
+            assert isinstance(response, dict)
+            assert response["content"] == mock_text
+            assert response["role"] == "ai"
+            assert "sources" in response["metadata"]
+            
             mock_create.assert_called_once()
             
             args, kwargs = mock_create.call_args
