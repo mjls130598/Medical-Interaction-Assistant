@@ -30,7 +30,3 @@ jobs:
     - name: Escaneo de seguridad
       run: |
         pipenv run bandit -r . -ll
-
-    - name: Comprobación de cobertura de código
-      run: |
-        pipenv run pytest tests/unit/ --cov=. --cov-report=term-missing

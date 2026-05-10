@@ -26,6 +26,10 @@ jobs:
         pipenv --rm || true
         pipenv install --dev --deploy
 
+    - name: Comprobación de cobertura de código
+      run: |
+        pipenv run pytest tests/unit/ --cov=. --cov-report=term-missing
+
     - name: Ejecutar pruebas unitarias
       run: |
         pipenv run pytest tests/unit/
