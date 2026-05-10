@@ -33,3 +33,23 @@ class MongoHistoryRepo(HistoryRepository):
         )
 
         logging.info(f"Interaction for session {session_id} saved to MongoDB.")
+
+    def get_history(self, session_id: str) -> list[dict]:
+        """
+        Retrieve the chat history for a given session ID.
+
+        Arguments:
+            session_id (str): The unique identifier for the chat session.
+
+        Returns:
+            list[dict]: A list of dictionaries representing the chat history, where each dictionary contains 
+                        'role' and 'content' keys for both human messages and AI responses.
+
+        """
+        session = self.collection.find_one({"session_id": session_id})
+        if session and "messages" in session:
+            logging.info(f"Chat history for session {session_id} retrieved from MongoDB.")
+            return session["messages"]
+        else:
+            logging.info(f"No chat history found for session {session_id}.")
+            return []
