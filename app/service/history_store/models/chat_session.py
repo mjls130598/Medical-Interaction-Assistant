@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class MessageRole(str, Enum):
@@ -25,7 +25,7 @@ class SourceModel(BaseModel):
     section_title: str
     verified: bool = False
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "example": {
                 "index": 1,
@@ -34,9 +34,9 @@ class SourceModel(BaseModel):
                 "section_title": "Información y Dosis",
                 "verified": True
             }
-        }
-
+        },
         extra = "forbid"
+    )
 
 class MetadataModel(BaseModel):
     """
@@ -47,7 +47,7 @@ class MetadataModel(BaseModel):
     sources: list[SourceModel]
     total_sources_retrieved: int
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "example":{
                 "sources": [
@@ -61,9 +61,9 @@ class MetadataModel(BaseModel):
                 ],
                 "total_sources_retrieved": 1
             }
-        }
-
+        },
         extra = "forbid"
+    )
 
 class MessageModel(BaseModel):
     """
@@ -71,12 +71,7 @@ class MessageModel(BaseModel):
     including role, content, timestamp, and optional metadata.
     """
 
-    role: MessageRole
-    content: str
-    timestamp: datetime = lambda: Field(default_factory = datetime.now(timezone.utc))
-    metadata: Optional[MetadataModel] = None
-
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "examples": [
                 {
@@ -102,7 +97,14 @@ class MessageModel(BaseModel):
                     "timestamp": "2024-06-01T12:00:05Z"
                 }
             ]
-        }
+        },
+        extra = "forbid"
+    )
+
+    role: MessageRole
+    content: str
+    timestamp: datetime = Field(default_factory = lambda: datetime.now(timezone.utc))
+    metadata: Optional[MetadataModel] = None
 
 class ChatSessionModel(BaseModel):
     """
@@ -114,7 +116,7 @@ class ChatSessionModel(BaseModel):
     updated_at: datetime = Field(default_factory = datetime.now(timezone.utc))
     messages: list[MessageModel] = Field(default_factory = list)
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "example": {
                 "session_id": "123e4567-e89b-12d3-a456-426614174000",
@@ -145,8 +147,8 @@ class ChatSessionModel(BaseModel):
                     }
                 ]
             }
-        }
-
-        extra = "forbid"
-        populate_by_name = True
+        },
+        extra = "forbid",
+        populate_by_name = True,
         arbitrary_types_allowed = True
+    )
