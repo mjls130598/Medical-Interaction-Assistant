@@ -44,7 +44,7 @@ Getting reliable answers to these questions usually means digging through dense 
 │                                                             │
 │   ┌──────────────┐    ┌───────────────┐    ┌────────────┐   │
 │   │  PDF Loader  │───▶│  Text Chunks  │───▶│ Embeddings │   │
-│   │  (PyMuPDF)   │    │  (Splitter)   │    │ (GroQ)   │   │
+│   │  (PyMuPDF)   │    │  (Splitter)   │    │ (GroQ)     │   │
 │   └──────────────┘    └───────────────┘    └──────┬─────┘   │
 │                                                   │         │
 │   ┌──────────────────────────────────────────┐    │         │
@@ -85,6 +85,9 @@ Medical-Interaction-Assistant/
 │   │   ├── loaders/
 │   │   └── readers/
 │   ├── service/                # App service layer and orchestration
+│   │   ├── assistance/
+│   │   ├── history_store/
+│   │   └── vector_store/
 │   ├── __init__.py
 │   └── main.py                 # FastAPI application entry point
 │
@@ -101,9 +104,11 @@ Medical-Interaction-Assistant/
 │       │   │   ├── tests_loaders/
 │       │   │   └── tests_readers/
 │       │   └── tests_service/
-│       │       ├── tests_vector_store/
 │       │       ├── tests_assistance/
+│       │       ├── tests_history_store/
+│       │       └── tests_vector_store/
 │       └── __init__.py
+├── docker-compose.yml          # Docker Compose configuration
 ├── Pipfile                     # Dependency management (pipenv)
 ├── Pipfile.lock
 ├── pytest.ini                  # Pytest configuration
@@ -123,6 +128,7 @@ Medical-Interaction-Assistant/
 - [x] **RAG system** — Build the retrieval-augmented generation communication system
 - [x] **Source citation** — Insert consulted sources into each response
 - [x] **CI workflows** — Add GitHub Actions workflows for tests, linting, security scan, and coverage
+- [x] **Conversation memory for responses** - Add MongoDB store and retrieval of past interactions to improve response quality and context retention
 
 ---
 
@@ -130,7 +136,6 @@ Medical-Interaction-Assistant/
 
 - [ ] **Create the FastAPI application**
 - [ ] **Create a simple frontend for queries**
-- [ ] **Create conversation memory for responses**
 
 ---
 
@@ -146,11 +151,12 @@ Medical-Interaction-Assistant/
 
 | Layer | Technology |
 |---|---|
-| Language | Python 3.11+ |
+| Language | Python 3.12+ |
 | API Framework | FastAPI |
 | AI Orchestration | LangChain + GroQ |
 | LLM | GroQ (via LangChain) |
 | Vector Store | ChromaDB |
+| History Store | MongoDB |
 | PDF Processing | PyMuPDF |
 | Testing | Pytest + pyfakefs |
 | Dependency Management | Pipenv |
@@ -162,7 +168,7 @@ Medical-Interaction-Assistant/
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.12+
 - [Pipenv](https://pipenv.pypa.io/en/latest/)
 - A GroQ API key
 
