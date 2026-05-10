@@ -3,6 +3,11 @@ import pytest
 from unittest.mock import patch, MagicMock
 from app.service.history_store.database import MongoDBClient
 
+@pytest.fixture(autouse=True)
+def reset_singleton():
+    """Limpia el singleton antes de cada test."""
+    MongoDBClient._instance = None
+    yield
 
 class TestMongoDBClient:
     """Test class for MongoDBClient singleton."""
@@ -62,8 +67,11 @@ class TestMongoDBClient:
         """Test closing connection when no instance exists."""
         MongoDBClient._instance = None
 
-        # Call close without creating instance
         MongoDBClient().close_connection()
 
-        # Should not raise error, but since no instance, nothing to close
-        # In code, it checks if _instance, so safe
+    @patch('app.service.history_store.database.MongoClient')
+    @patch.dict(os.environ, {'MONGO_URL': '', 'MONGO_DB_NAME': ''}) # Variables vacías
+    def test_initialization_with_missing_env_vars(self, mock_mongo_client):
+        with pytest.raises(ValueError, match="MONGO_URL and MONGO_DB_NAME environment variables must be set."):
+            MongoDBClient._instance = None
+            MongoDBClient()

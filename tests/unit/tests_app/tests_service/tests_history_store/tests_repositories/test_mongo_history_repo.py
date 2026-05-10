@@ -78,3 +78,78 @@ class TestMongoHistoryRepo:
 
         # Ensure collection is set
         assert repo.collection is mock_collection
+
+    def test_get_history_existing_session(self):
+        """Test retrieving history for an existing session with messages."""
+        mock_db_client = MagicMock()
+        mock_collection = MagicMock()
+        mock_db_client.sessions = mock_collection
+
+        repo = MongoHistoryRepo(mock_db_client)
+
+        session_id = "existing_session"
+        mock_messages = [
+            {"role": "human", "content": "Hello"},
+            {"role": "ai", "content": "Hi there"}
+        ]
+        mock_session = {"session_id": session_id, "messages": mock_messages}
+
+        mock_collection.find_one.return_value = mock_session
+
+        history = repo.get_history(session_id)
+
+        mock_collection.find_one.assert_called_once_with({"session_id": session_id})
+        assert history == mock_messages
+
+    def test_get_history_non_existing_session(self):
+        """Test retrieving history for a non-existing session."""
+        mock_db_client = MagicMock()
+        mock_collection = MagicMock()
+        mock_db_client.sessions = mock_collection
+
+        repo = MongoHistoryRepo(mock_db_client)
+
+        session_id = "non_existing_session"
+
+        mock_collection.find_one.return_value = None
+
+        history = repo.get_history(session_id)
+
+        mock_collection.find_one.assert_called_once_with({"session_id": session_id})
+        assert history == []
+
+    def test_get_history_session_without_messages(self):
+        """Test retrieving history for a session that exists but has no messages."""
+        mock_db_client = MagicMock()
+        mock_collection = MagicMock()
+        mock_db_client.sessions = mock_collection
+
+        repo = MongoHistoryRepo(mock_db_client)
+
+        session_id = "empty_session"
+        mock_session = {"session_id": session_id}  # No messages key
+
+        mock_collection.find_one.return_value = mock_session
+
+        history = repo.get_history(session_id)
+
+        mock_collection.find_one.assert_called_once_with({"session_id": session_id})
+        assert history == []
+
+    def test_get_history_empty_messages(self):
+        """Test retrieving history when messages list is empty."""
+        mock_db_client = MagicMock()
+        mock_collection = MagicMock()
+        mock_db_client.sessions = mock_collection
+
+        repo = MongoHistoryRepo(mock_db_client)
+
+        session_id = "empty_messages_session"
+        mock_session = {"session_id": session_id, "messages": []}
+
+        mock_collection.find_one.return_value = mock_session
+
+        history = repo.get_history(session_id)
+
+        mock_collection.find_one.assert_called_once_with({"session_id": session_id})
+        assert history == []
