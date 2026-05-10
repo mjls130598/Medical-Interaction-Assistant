@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import logging
 import os
 
@@ -42,6 +43,8 @@ class GroqRAGAssistance(AbstractRAGAssistance):
             str: The generated answer based on the retrieved context and the query.
         """
 
+        query_timestamp = datetime.now(timezone.utc)
+
         logging.info("Getting relevant context for query: " + query)
         context, source_metadata = self._get_relevant_context(query)
 
@@ -61,12 +64,12 @@ class GroqRAGAssistance(AbstractRAGAssistance):
         logging.info("Received response from Groq.")
         ai_response = response.choices[0].message.content.strip()
 
-        final_response = self._format_ai_response(ai_response, source_metadata)
+        final_response = self._format_ai_response(ai_response, source_metadata, response.created)
         logging.debug(f"Final formatted response: {final_response}")
 
         if self.db:
             logging.info("Saving interaction to the database.")
-            human_msg = {"role": "human", "content": query}
+            human_msg = {"role": "human", "content": query, "timestamp": query_timestamp}
             self.db.save_interaction(session_id, human_msg, final_response)
 
         return final_response

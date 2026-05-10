@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 import logging
 import re
 
@@ -98,7 +99,7 @@ class AbstractRAGAssistance(ABC):
 
         return "\n\n".join(formatted_context), source_metadata
     
-    def _format_ai_response(self, ai_response: str, source_metadata: list) -> str:
+    def _format_ai_response(self, ai_response: str, source_metadata: list, timestamp: datetime) -> dict:
         """
         Format the AI response to include source citations and a bibliography section based on the retrieved context.
         
@@ -118,7 +119,8 @@ class AbstractRAGAssistance(ABC):
                 used_sources.append({
                     "index": idx,
                     "url": source_metadata[idx]["source"],
-                    "title": source_metadata[idx]["med_name"],
+                    "med_name": source_metadata[idx]["med_name"],
+                    "section_title": source_metadata[idx]["section_title"],
                     "verified": True
                 })
 
@@ -128,5 +130,6 @@ class AbstractRAGAssistance(ABC):
             "metadata": {
                 "sources": used_sources,
                 "total_sources_retrieved": len(source_metadata)
-            }
+            },
+            "timestamp": timestamp
         }
