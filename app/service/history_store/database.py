@@ -11,10 +11,12 @@ class MongoDBClient:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(MongoDBClient, cls).__new__(cls)
-            cls._instance._initialize_client()
 
             uri = os.getenv("MONGO_URL")
             db_name = os.getenv("MONGO_DB_NAME")
+
+            if not uri or not db_name:
+                raise ValueError("MONGO_URL and MONGO_DB_NAME environment variables must be set.")
 
             cls._instance.client = MongoClient(uri)
             cls._instance.db = cls._instance.client[db_name]
@@ -25,7 +27,7 @@ class MongoDBClient:
     
     @property
     def medical_db(self):
-        return self._instance.db
+        return self.db
     
     def close_connection(self):
         if self._instance and self._instance.client:
