@@ -5,6 +5,7 @@ omit =
     main.py
     __init__.py
     conftest.py
+    use_example.py
 
 [report]
 fail_under = 80
