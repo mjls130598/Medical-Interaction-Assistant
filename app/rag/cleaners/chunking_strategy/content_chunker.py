@@ -2,8 +2,6 @@ import logging
 from typing import List
 
 from .chunking_strategy import ChunkingStrategy
-from .groq_strategy import GroqStrategy
-
 
 class ContentChunker:
     def __init__(self, strategy: ChunkingStrategy,
