@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
-from app.service.history_store.models.chat_session import MessageRole, SourceModel, MetadataModel, MessageModel
+from app.service.history_store.models.chat_session import ChatSessionModel, MessageRole, SourceModel, MetadataModel, MessageModel
 
 
 class TestMessageRole:
@@ -161,5 +161,43 @@ class TestMessageModel:
             MessageModel(
                 role=MessageRole.HUMAN,
                 content="Test",
+                extra_field="invalid"
+            )
+
+
+class TestChatSessionModel:
+    """Test class for ChatSessionModel Pydantic model."""
+
+    def test_valid_chat_session_creation(self):
+        """Test creating a valid ChatSessionModel with messages."""
+        source = SourceModel(index=1, url="https://example.com", med_name="Test", section_title="Section")
+        metadata = MetadataModel(sources=[source], total_sources_retrieved=1)
+        human_message = MessageModel(role=MessageRole.HUMAN, content="Hello")
+        ai_message = MessageModel(role=MessageRole.AI, content="Reply", metadata=metadata)
+
+        session = ChatSessionModel(
+            session_id="session-123",
+            messages=[human_message, ai_message]
+        )
+
+        assert session.session_id == "session-123"
+        assert len(session.messages) == 2
+        assert session.messages[0].role == MessageRole.HUMAN
+        assert session.created_at <= session.updated_at
+
+    def test_chat_session_default_values(self):
+        """Test ChatSessionModel default values for dates and messages."""
+        session = ChatSessionModel(session_id="session-default")
+
+        assert session.session_id == "session-default"
+        assert isinstance(session.created_at, datetime)
+        assert isinstance(session.updated_at, datetime)
+        assert session.messages == []
+
+    def test_chat_session_invalid_extra_field(self):
+        """Test that extra fields are forbidden in ChatSessionModel."""
+        with pytest.raises(ValidationError):
+            ChatSessionModel(
+                session_id="session-123",
                 extra_field="invalid"
             )

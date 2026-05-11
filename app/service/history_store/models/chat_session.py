@@ -112,8 +112,8 @@ class ChatSessionModel(BaseModel):
     """
 
     session_id: str
-    created_at: datetime = Field(default_factory = datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory = datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory = lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory = lambda: datetime.now(timezone.utc))
     messages: list[MessageModel] = Field(default_factory = list)
 
     model_config = ConfigDict(
