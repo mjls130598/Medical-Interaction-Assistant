@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import logging
 import os
 
-from groq import Groq
+from groq import AsyncGroq
 
 from app.rag.embedding.embedding_strategy.embedding_strategy import EmbeddingStrategy
 from .abstract_rag_assistance import AbstractRAGAssistance
@@ -28,10 +28,10 @@ class GroqRAGAssistance(AbstractRAGAssistance):
                          embedding_strategy=embedding_strategy,
                          db_connection=db_connection)
         
-        self.client = Groq(api_key = os.getenv("GROQ_API_KEY"))
+        self.client = AsyncGroq(api_key = os.getenv("GROQ_API_KEY"))
         self.model = model
         
-    def ask(self, query: str, session_id: str) -> str:
+    async def ask(self, query: str, session_id: str) -> str:
         """
         Process a user query and return an answer based on the RAG approach using Groq for generation.
 
@@ -55,7 +55,7 @@ class GroqRAGAssistance(AbstractRAGAssistance):
         ]
 
         logging.debug(f"Messages sent to Groq: {messages}")
-        response = self.client.chat.completions.create(
+        response = await self.client.chat.completions.create(
             messages = messages,
             model = self.model,
             temperature = 0.2
