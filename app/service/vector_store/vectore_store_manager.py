@@ -17,6 +17,15 @@ class VectorStoreManager:
         self.client = chromadb.PersistentClient(path=path)
         self.collection = self.client.get_or_create_collection(name=collection_name)
 
+    def is_empty(self) -> bool:
+        """
+        Check if the vector store collection is empty.
+
+        Returns:
+            bool: True if the collection has no documents, False otherwise.
+        """
+        return self.collection.count() == 0
+
     def save_documents(self, documents: List[Document]):
         """
         Save a list of documents with their embeddings to the vector store.
@@ -26,14 +35,30 @@ class VectorStoreManager:
                                         each containing metadata with an "embedding" key.
         """
 
+        ids = []
+        embeddings = []
+        clean_metadatas = []
+        page_contents = []
+
+        for doc in documents:
+            ids.append(doc.metadata["document_id"])
+            embeddings.append(doc.metadata["embedding"])
+            
+            # Creamos una copia de la metadata SIN el embedding
+            meta = doc.metadata.copy()
+            meta.pop("embedding", None) # Eliminamos la clave 'embedding' si existe
+            clean_metadatas.append(meta)
+            
+            page_contents.append(doc.page_content)
+
         self.collection.upsert(
-            ids=[doc.metadata["document_id"] for doc in documents],
-            embeddings=[doc.metadata["embedding"] for doc in documents],
-            metadatas=[doc.metadata for doc in documents],
-            documents=[doc.page_content for doc in documents]
+            ids=ids,
+            embeddings=embeddings,
+            metadatas=clean_metadatas, 
+            documents=page_contents
         )
 
-    def search_relevant_chunks(self, query_embedding: List[float], n_results: int = 5) -> List[str]:
+    def search_relevant_chunks(self, query_embedding: List[float], n_results: int = 5) -> List[tuple[str, dict]]:
         """
         Search for the most relevant document chunks based on a query embedding.
 
@@ -42,11 +67,11 @@ class VectorStoreManager:
             n_results (int): The number of top relevant results to return.
         
         Returns:
-            List[str]: A list of the most relevant document contents.
+            List[tuple[str, dict]]: A list of the most relevant document contents.
         """
         results = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=n_results
         )
         
-        return results
+        return results['documents'][0], results['metadatas'][0]
