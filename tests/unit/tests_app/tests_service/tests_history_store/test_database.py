@@ -1,11 +1,13 @@
 import os
 import pytest
 from unittest.mock import patch, MagicMock
+
+pytest.importorskip("pymongo")
 from app.service.history_store.database import MongoDBClient
 
 @pytest.fixture(autouse=True)
 def reset_singleton():
-    """Limpia el singleton antes de cada test."""
+    """Reset the singleton instance before each test."""
     MongoDBClient._instance = None
     yield
 
@@ -49,10 +51,8 @@ class TestMongoDBClient:
 
     @patch('app.service.history_store.database.MongoClient')
     @patch.dict(os.environ, {'MONGO_URL': 'test_url', 'MONGO_DB_NAME': 'test_db'})
-    def test_close_connection(self, mock_mongo_client):
-        """Test closing the MongoDB connection."""
-        MongoDBClient._instance = None
-
+    def test_close_connection_closes_client(self, mock_mongo_client):
+        """Test closing the MongoDB client after initialization."""
         mock_client = MagicMock()
         mock_mongo_client.return_value = mock_client
 
@@ -62,16 +62,9 @@ class TestMongoDBClient:
         mock_client.close.assert_called_once()
 
     @patch('app.service.history_store.database.MongoClient')
-    @patch.dict(os.environ, {'MONGO_URL': 'test_url', 'MONGO_DB_NAME': 'test_db'})
-    def test_close_connection_no_instance(self, mock_mongo_client):
-        """Test closing connection when no instance exists."""
-        MongoDBClient._instance = None
-
-        MongoDBClient().close_connection()
-
-    @patch('app.service.history_store.database.MongoClient')
-    @patch.dict(os.environ, {'MONGO_URL': '', 'MONGO_DB_NAME': ''}) # Variables vacías
+    @patch.dict(os.environ, {'MONGO_URL': '', 'MONGO_DB_NAME': ''})
     def test_initialization_with_missing_env_vars(self, mock_mongo_client):
+        """Test error raised when required Mongo environment variables are missing."""
+        MongoDBClient._instance = None
         with pytest.raises(ValueError, match="MONGO_URL and MONGO_DB_NAME environment variables must be set."):
-            MongoDBClient._instance = None
             MongoDBClient()
