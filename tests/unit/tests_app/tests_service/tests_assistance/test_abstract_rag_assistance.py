@@ -1,4 +1,3 @@
-from abc import ABC
 from unittest.mock import MagicMock
 
 import pytest
@@ -23,9 +22,12 @@ def make_mock_embedding_strategy(return_vector: list[float]) -> MagicMock:
 def make_mock_vector_store(results: dict) -> MagicMock:
     """Create a mock vector store returning a fixed query result."""
     store = MagicMock()
-    store.search_relevant_chunks.return_value = results
+    # SIMULAMOS el retorno de search_relevant_chunks: (List[str], List[dict])
+    store.search_relevant_chunks.return_value = (
+        results['documents'][0], 
+        results['metadatas'][0]
+    )
     return store
-
 
 class TestAbstractRAGAssistance:
 

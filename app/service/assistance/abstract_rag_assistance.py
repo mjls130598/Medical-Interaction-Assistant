@@ -5,7 +5,6 @@ import re
 
 from app.rag.embedding.embedding_strategy.embedding_strategy import EmbeddingStrategy
 from ..vector_store.vectore_store_manager import VectorStoreManager
-from langchain_community.chat_message_histories import ChatMessageHistory
 
 
 class AbstractRAGAssistance(ABC):
@@ -31,18 +30,12 @@ class AbstractRAGAssistance(ABC):
             "REGLAS CRÍTICAS:\n"
             "1. CITAS: Cada vez que afirmes algo basado en el contexto, añade el número de fuente al final de la frase,"
             " por ejemplo: 'La dosis recomendada es de 500mg [1]'.\n"
-            "2. BIBLIOGRAFÍA: Al final de tu respuesta, crea una sección llamada 'Fuentes consultadas'"
-            " donde listes el nombre del medicamento, la sección y el enlace (URL) de cada fuente utilizada "
-            "(separado entre viñetas cada fuente).\n Ejemplo:\n"
-            "Fuentes consultadas:\n"
-            "[1] Paracetamol (Prospecto) - Sección: Indicaciones. URL: https://cima.aemps.es/...\n"
-            "[2] Paracetamol (Prospecto) - Sección: Posología." 
         )
 
         self.db = db_connection
 
     @abstractmethod
-    def ask(self, query: str, session_id: str) -> str:
+    async def ask(self, query: str, session_id: str) -> str:
         """
         Process a user query and return an answer based on the RAG approach.
         This method should be implemented by subclasses to define specific retrieval and generation logic.
@@ -72,7 +65,7 @@ class AbstractRAGAssistance(ABC):
         logging.info("Looking context for query: " + query)
 
         query_vector = self.embedding_strategy.embed_batch([query])[0]
-        results = self.vector_store.search_relevant_chunks(
+        documents, metadatas = self.vector_store.search_relevant_chunks(
             query_embedding=query_vector,
             n_results=n_results
         )
@@ -80,9 +73,9 @@ class AbstractRAGAssistance(ABC):
         formatted_context = []
         source_metadata = []
 
-        logging.info(f"Retrieved {len(results['documents'][0])} relevant chunks for the query.")
+        logging.info(f"Retrieved {len(documents)} relevant chunks for the query.")
 
-        for i, (doc_text, metadata) in enumerate(zip(results['documents'][0], results['metadatas'][0])):
+        for i, (doc_text, metadata) in enumerate(zip(documents, metadatas)):
             chunk_info = (
                 f"-- FUENTE [{i+1}] --\n"
                 f"Medicamento: {metadata.get('med_name', 'Desconocido')}\n"
