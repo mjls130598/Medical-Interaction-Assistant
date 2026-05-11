@@ -35,7 +35,7 @@ Getting reliable answers to these questions usually means digging through dense 
                       ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    FastAPI REST Layer                       │
-│              POST /query  ·  GET /health                    │
+│          POST /ask · GET /new_session · GET /health         |
 └─────────────────────┬───────────────────────────────────────┘
                       │
                       ▼
@@ -44,7 +44,7 @@ Getting reliable answers to these questions usually means digging through dense 
 │                                                             │
 │   ┌──────────────┐    ┌───────────────┐    ┌────────────┐   │
 │   │  PDF Loader  │───▶│  Text Chunks  │───▶│ Embeddings │   │
-│   │  (PyMuPDF)   │    │  (Splitter)   │    │ (GroQ)     │   │
+│   │  (PyMuPDF)   │    │  (tiktoken)   │    │ (GroQ)     │   │
 │   └──────────────┘    └───────────────┘    └──────┬─────┘   │
 │                                                   │         │
 │   ┌──────────────────────────────────────────┐    │         │
@@ -89,7 +89,6 @@ Medical-Interaction-Assistant/
 │   │   ├── history_store/
 │   │   └── vector_store/
 │   ├── __init__.py
-│   └── main.py                 # FastAPI application entry point
 │
 ├── data/                       # Input data and PDF storage
 │   └── input_pdfs/
@@ -109,9 +108,11 @@ Medical-Interaction-Assistant/
 │       │       └── tests_vector_store/
 │       └── __init__.py
 ├── docker-compose.yml          # Docker Compose configuration
+├── main.py                     # FastAPI application entry point
 ├── Pipfile                     # Dependency management (pipenv)
 ├── Pipfile.lock
 ├── pytest.ini                  # Pytest configuration
+├──use_example.py          # Use Example of Medical Assistance service
 ├── .gitignore
 └── LICENSE                     # GPL-3.0
 ```
